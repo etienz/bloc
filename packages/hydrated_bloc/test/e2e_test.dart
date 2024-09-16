@@ -1,10 +1,9 @@
 import 'dart:io';
 
-import 'package:bloc/bloc.dart';
-import 'package:test/test.dart';
-import 'package:path/path.dart' as path;
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:hydrated_bloc/src/hydrated_bloc.dart';
+import 'package:path/path.dart' as path;
+import 'package:test/test.dart';
 
 import 'cubits/cubits.dart';
 
@@ -26,10 +25,10 @@ void main() {
     tearDown(() async {
       await storage.clear();
       try {
+        await HydratedStorage.hive.deleteFromDisk();
         Directory(
           path.join(Directory.current.path, '.cache'),
         ).deleteSync(recursive: true);
-        await HydratedStorage.hive.deleteFromDisk();
       } catch (_) {}
     });
 
@@ -98,7 +97,7 @@ void main() {
       test('persists and restores object-*>map list correctly', () async {
         const item = MapObject(1);
         const fromJson = MapObject.fromJson;
-        final cubit = ListCubitMap<MapObject, int>(fromJson, true);
+        final cubit = ListCubitMap<MapObject, int>(fromJson, explicit: true);
         expect(cubit.state, isEmpty);
         cubit.addItem(item);
         await sleep();
@@ -124,8 +123,10 @@ void main() {
       test('persists and restores obj-*>map<custom> list correctly', () async {
         final item = MapCustomObject(1);
         const fromJson = MapCustomObject.fromJson;
-        final cubit =
-            ListCubitMap<MapCustomObject, CustomObject>(fromJson, true);
+        final cubit = ListCubitMap<MapCustomObject, CustomObject>(
+          fromJson,
+          explicit: true,
+        );
         expect(cubit.state, isEmpty);
         cubit.addItem(item);
         await sleep();
@@ -151,7 +152,10 @@ void main() {
       test('persists and restores object-*>list list correctly', () async {
         const item = ListObject(1);
         const fromJson = ListObject.fromJson;
-        final cubit = ListCubitList<ListObject, int>(fromJson, true);
+        final cubit = ListCubitList<ListObject, int>(
+          fromJson,
+          explicit: true,
+        );
         expect(cubit.state, isEmpty);
         cubit.addItem(item);
         await sleep();
@@ -177,7 +181,10 @@ void main() {
       test('persists and restores obj-*>list<map> list correctly', () async {
         final item = ListMapObject(1);
         const fromJson = ListMapObject.fromJson;
-        final cubit = ListCubitList<ListMapObject, MapObject>(fromJson, true);
+        final cubit = ListCubitList<ListMapObject, MapObject>(
+          fromJson,
+          explicit: true,
+        );
         expect(cubit.state, isEmpty);
         cubit.addItem(item);
         await sleep();
@@ -203,7 +210,10 @@ void main() {
       test('persists and restores obj-*>list<list> list correctly', () async {
         final item = ListListObject(1);
         const fromJson = ListListObject.fromJson;
-        final cubit = ListCubitList<ListListObject, ListObject>(fromJson, true);
+        final cubit = ListCubitList<ListListObject, ListObject>(
+          fromJson,
+          explicit: true,
+        );
         expect(cubit.state, isEmpty);
         cubit.addItem(item);
         await sleep();
@@ -229,8 +239,10 @@ void main() {
       test('persists and restores obj-*>list<custom> list correctly', () async {
         final item = ListCustomObject(1);
         const fromJson = ListCustomObject.fromJson;
-        final cubit =
-            ListCubitList<ListCustomObject, CustomObject>(fromJson, true);
+        final cubit = ListCubitList<ListCustomObject, CustomObject>(
+          fromJson,
+          explicit: true,
+        );
         expect(cubit.state, isEmpty);
         cubit.addItem(item);
         await sleep();
@@ -256,8 +268,10 @@ void main() {
       test('persists and restores obj-*>list<custom> empty list correctly',
           () async {
         const fromJson = ListCustomObject.fromJson;
-        final cubit =
-            ListCubitList<ListCustomObject, CustomObject>(fromJson, true);
+        final cubit = ListCubitList<ListCustomObject, CustomObject>(
+          fromJson,
+          explicit: true,
+        );
         expect(cubit.state, isEmpty);
         cubit.reset();
         await sleep();
@@ -308,15 +322,13 @@ void main() {
         expect(cubit.state, isNull);
         expect(
           () => cubit.setCyclic(cycle1),
-          throwsA(isA<BlocUnhandledErrorException>().having(
-            (dynamic e) => e.error,
-            'inner error of cubit error',
+          throwsA(
             isA<HydratedUnsupportedError>().having(
-              (dynamic e) => e.cause,
+              (e) => e.cause,
               'cycle2 -> cycle1 -> cycle2 ->',
               isA<HydratedCyclicError>(),
             ),
-          )),
+          ),
         );
       });
     });
@@ -327,15 +339,13 @@ void main() {
         expect(cubit.state, isNull);
         expect(
           cubit.setBad,
-          throwsA(isA<BlocUnhandledErrorException>().having(
-            (dynamic e) => e.error,
-            'inner error of cubit error',
+          throwsA(
             isA<HydratedUnsupportedError>().having(
-              (dynamic e) => e.cause,
+              (e) => e.cause,
               'Object has no `toJson`',
               isA<NoSuchMethodError>(),
             ),
-          )),
+          ),
         );
       });
 
@@ -344,12 +354,27 @@ void main() {
         expect(cubit.state, isNull);
         expect(
           () => cubit.setBad(VeryBadObject()),
-          throwsA(isA<BlocUnhandledErrorException>().having(
-            (dynamic e) => e.error,
-            'inner error of cubit error',
-            isA<HydratedUnsupportedError>(),
-          )),
+          throwsA(isA<HydratedUnsupportedError>()),
         );
+      });
+    });
+
+    group('FromJsonStateCubit', () {
+      test('does not throw StackOverflow ', () async {
+        var cubit = FromJsonStateCubit();
+
+        expect(cubit.fromJsonCalls, isEmpty);
+        expect(cubit.state, equals(0));
+
+        cubit.increment();
+        await sleep();
+
+        expect(cubit.state, equals(1));
+        expect(cubit.fromJsonCalls, isEmpty);
+
+        cubit = FromJsonStateCubit();
+        expect(cubit.fromJsonCalls, equals([0]));
+        expect(cubit.state, equals(1));
       });
     });
   });

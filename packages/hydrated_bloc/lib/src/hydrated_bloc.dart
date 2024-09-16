@@ -1,6 +1,9 @@
-import 'package:bloc/bloc.dart';
-import 'package:meta/meta.dart';
+// ignore_for_file: avoid_catching_errors
+
+import 'dart:async';
+
 import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:meta/meta.dart';
 
 /// {@template hydrated_bloc}
 /// Specialized [Bloc] which handles initializing the [Bloc] state
@@ -8,21 +11,14 @@ import 'package:hydrated_bloc/hydrated_bloc.dart';
 /// across hot restarts as well as complete app restarts.
 ///
 /// ```dart
-/// enum CounterEvent { increment, decrement }
+/// abstract class CounterEvent {}
+/// class CounterIncrementPressed extends CounterEvent {}
+/// class CounterDecrementPressed extends CounterEvent {}
 ///
 /// class CounterBloc extends HydratedBloc<CounterEvent, int> {
-///   CounterBloc() : super(0);
-///
-///   @override
-///   Stream<int> mapEventToState(CounterEvent event) async* {
-///     switch (event) {
-///       case CounterEvent.increment:
-///         yield state + 1;
-///         break;
-///       case CounterEvent.decrement:
-///         yield state - 1;
-///         break;
-///     }
+///   CounterBloc() : super(0) {
+///     on<CounterIncrementPressed>((event, emit) => emit(state + 1));
+///     on<CounterDecrementPressed>((event, emit) => emit(state - 1));
 ///   }
 ///
 ///   @override
@@ -41,10 +37,10 @@ abstract class HydratedBloc<Event, State> extends Bloc<Event, State>
     hydrate();
   }
 
-  /// Setter for instance of [Storage] which will be used to
-  /// manage persisting/restoring the [Bloc] state.
   static Storage? _storage;
 
+  /// Setter for instance of [Storage] which will be used to
+  /// manage persisting/restoring the [Bloc] state.
   static set storage(Storage? storage) => _storage = storage;
 
   /// Instance of [Storage] which will be used to
@@ -123,40 +119,28 @@ mixin HydratedMixin<State> on BlocBase<State> {
   void hydrate() {
     final storage = HydratedBloc.storage;
     try {
+      final stateJson = storage.read(storageToken) as Map<dynamic, dynamic>?;
+      _state = stateJson != null ? _fromJson(stateJson) : super.state;
+    } catch (error, stackTrace) {
+      onError(error, stackTrace);
+      _state = super.state;
+    }
+
+    try {
       final stateJson = _toJson(state);
       if (stateJson != null) {
         storage.write(storageToken, stateJson).then((_) {}, onError: onError);
       }
     } catch (error, stackTrace) {
       onError(error, stackTrace);
+      if (error is StorageNotFound) rethrow;
     }
   }
 
   State? _state;
 
   @override
-  State get state {
-    final storage = HydratedBloc.storage;
-    if (_state != null) return _state!;
-    try {
-      final stateJson = storage.read(storageToken) as Map<dynamic, dynamic>?;
-      if (stateJson == null) {
-        _state = super.state;
-        return super.state;
-      }
-      final cachedState = _fromJson(stateJson);
-      if (cachedState == null) {
-        _state = super.state;
-        return super.state;
-      }
-      _state = cachedState;
-      return cachedState;
-    } catch (error, stackTrace) {
-      onError(error, stackTrace);
-      _state = super.state;
-      return super.state;
-    }
-  }
+  State get state => _state ?? super.state;
 
   @override
   void onChange(Change<State> change) {
@@ -170,6 +154,7 @@ mixin HydratedMixin<State> on BlocBase<State> {
       }
     } catch (error, stackTrace) {
       onError(error, stackTrace);
+      rethrow;
     }
     _state = state;
   }
@@ -282,9 +267,10 @@ mixin HydratedMixin<State> on BlocBase<State> {
         : _traverseComplexJson(object);
   }
 
+  // ignore: avoid_dynamic_calls
   dynamic _toEncodable(dynamic object) => object.toJson();
 
-  final List _seen = <dynamic>[];
+  final _seen = <dynamic>[];
 
   void _checkCycle(Object? object) {
     for (var i = 0; i < _seen.length; i++) {
@@ -296,8 +282,8 @@ mixin HydratedMixin<State> on BlocBase<State> {
   }
 
   void _removeSeen(dynamic object) {
-    assert(_seen.isNotEmpty);
-    assert(identical(_seen.last, object));
+    assert(_seen.isNotEmpty, 'seen must not be empty');
+    assert(identical(_seen.last, object), 'last seen object must be identical');
     _seen.removeLast();
   }
 
@@ -310,9 +296,17 @@ mixin HydratedMixin<State> on BlocBase<State> {
   /// in order to keep the caches independent of each other.
   String get id => '';
 
+  /// Storage prefix which can be overridden to provide a custom
+  /// storage namespace.
+  /// Defaults to [runtimeType] but should be overridden in cases
+  /// where stored data should be resilient to obfuscation or persist
+  /// between debug/release builds.
+  String get storagePrefix => runtimeType.toString();
+
   /// `storageToken` is used as registration token for hydrated storage.
+  /// Composed of [storagePrefix] and [id].
   @nonVirtual
-  String get storageToken => '${runtimeType.toString()}$id';
+  String get storageToken => '$storagePrefix$id';
 
   /// [clear] is used to wipe or invalidate the cache of a [HydratedBloc].
   /// Calling [clear] will delete the cached state of the bloc

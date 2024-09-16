@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'package:test/test.dart';
-import 'package:mocktail/mocktail.dart';
+
 import 'package:hydrated_bloc/hydrated_bloc.dart';
-import 'package:bloc/bloc.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';
 
 class MockStorage extends Mock implements Storage {}
@@ -30,6 +30,7 @@ class MyCallbackHydratedCubit extends HydratedCubit<int> {
   @override
   int? fromJson(dynamic json) {
     onFromJsonCalled?.call(json);
+    // ignore: avoid_dynamic_calls
     return json['value'] as int?;
   }
 
@@ -39,18 +40,28 @@ class MyCallbackHydratedCubit extends HydratedCubit<int> {
 }
 
 class MyHydratedCubit extends HydratedCubit<int> {
-  MyHydratedCubit([this._id, this._callSuper = true]) : super(0);
+  MyHydratedCubit([
+    this._id,
+    // ignore: avoid_positional_boolean_parameters
+    this._callSuper = true,
+    this._storagePrefix,
+  ]) : super(0);
 
   final String? _id;
   final bool _callSuper;
+  final String? _storagePrefix;
 
   @override
   String get id => _id ?? '';
 
   @override
+  String get storagePrefix => _storagePrefix ?? super.storagePrefix;
+
+  @override
   Map<String, int> toJson(int state) => {'value': state};
 
   @override
+  // ignore: avoid_dynamic_calls
   int? fromJson(dynamic json) => json['value'] as int?;
 
   @override
@@ -73,6 +84,7 @@ class MyMultiHydratedCubit extends HydratedCubit<int> {
   Map<String, int> toJson(int state) => {'value': state};
 
   @override
+  // ignore: avoid_dynamic_calls
   int? fromJson(dynamic json) => json['value'] as int?;
 }
 
@@ -92,6 +104,28 @@ void main() {
     test('reads from storage once upon initialization', () {
       MyCallbackHydratedCubit();
       verify<dynamic>(() => storage.read('MyCallbackHydratedCubit')).called(1);
+    });
+
+    test(
+        'reads from storage once upon initialization w/custom storagePrefix/id',
+        () {
+      const storagePrefix = '__storagePrefix__';
+      const id = '__id__';
+      MyHydratedCubit(id, true, storagePrefix);
+      verify<dynamic>(() => storage.read('$storagePrefix$id')).called(1);
+    });
+
+    test('writes to storage when onChange is called w/custom storagePrefix/id',
+        () {
+      const change = Change(
+        currentState: 0,
+        nextState: 0,
+      );
+      const expected = <String, int>{'value': 0};
+      const storagePrefix = '__storagePrefix__';
+      const id = '__id__';
+      MyHydratedCubit(id, true, storagePrefix).onChange(change);
+      verify(() => storage.write('$storagePrefix$id', expected)).called(2);
     });
 
     test(
@@ -117,7 +151,7 @@ void main() {
       cubit.increment();
       expect(cubit.state, 43);
       expect(fromJsonCalls, [
-        {'value': 42}
+        {'value': 42},
       ]);
     });
 
@@ -182,7 +216,8 @@ void main() {
           // ignore: prefer_const_constructors
           StorageNotFound().toString(),
           'Storage was accessed before it was initialized.\n'
-          'Please ensure that storage has been initialized.\n\n'
+          'Please ensure that storage has been initialized.\n'
+          '\n'
           'For example:\n\n'
           'HydratedBloc.storage = await HydratedStorage.build();',
         );
@@ -195,7 +230,7 @@ void main() {
       });
 
       test('should call storage.write when onChange is called', () {
-        final transition = const Change<int>(
+        const transition = Change<int>(
           currentState: 0,
           nextState: 0,
         );
@@ -207,7 +242,7 @@ void main() {
       test('should call storage.write when onChange is called with cubit id',
           () {
         final cubit = MyHydratedCubit('A');
-        final transition = const Change<int>(
+        const transition = Change<int>(
           currentState: 0,
           nextState: 0,
         );
@@ -221,7 +256,7 @@ void main() {
         runZonedGuarded(
           () async {
             final expectedError = Exception('oops');
-            final transition = const Change<int>(
+            const transition = Change<int>(
               currentState: 0,
               nextState: 0,
             );
@@ -233,18 +268,16 @@ void main() {
             fail('should throw');
           },
           (error, _) {
-            expect(
-              (error as BlocUnhandledErrorException).error.toString(),
-              'Exception: oops',
-            );
-            expect(error.stackTrace, isNotNull);
+            expect(error.toString(), 'Exception: oops');
           },
         );
       });
 
       test('stores initial state when instantiated', () {
         MyHydratedCubit();
-        verify(() => storage.write('MyHydratedCubit', {'value': 0})).called(1);
+        verify(
+          () => storage.write('MyHydratedCubit', {'value': 0}),
+        ).called(1);
       });
 
       test('initial state should return 0 when fromJson returns null', () {
@@ -276,10 +309,14 @@ void main() {
       test('initial state should return 0 when fromJson returns null', () {
         when<dynamic>(() => storage.read(any())).thenReturn(null);
         expect(MyMultiHydratedCubit('A').state, 0);
-        verify<dynamic>(() => storage.read('MyMultiHydratedCubitA')).called(1);
+        verify<dynamic>(
+          () => storage.read('MyMultiHydratedCubitA'),
+        ).called(1);
 
         expect(MyMultiHydratedCubit('B').state, 0);
-        verify<dynamic>(() => storage.read('MyMultiHydratedCubitB')).called(1);
+        verify<dynamic>(
+          () => storage.read('MyMultiHydratedCubitB'),
+        ).called(1);
       });
 
       test('initial state should return 101/102 when fromJson returns 101/102',
@@ -288,13 +325,17 @@ void main() {
           () => storage.read('MyMultiHydratedCubitA'),
         ).thenReturn({'value': 101});
         expect(MyMultiHydratedCubit('A').state, 101);
-        verify<dynamic>(() => storage.read('MyMultiHydratedCubitA')).called(1);
+        verify<dynamic>(
+          () => storage.read('MyMultiHydratedCubitA'),
+        ).called(1);
 
         when<dynamic>(
           () => storage.read('MyMultiHydratedCubitB'),
         ).thenReturn({'value': 102});
         expect(MyMultiHydratedCubit('B').state, 102);
-        verify<dynamic>(() => storage.read('MyMultiHydratedCubitB')).called(1);
+        verify<dynamic>(
+          () => storage.read('MyMultiHydratedCubitB'),
+        ).called(1);
       });
 
       group('clear', () {
@@ -317,7 +358,7 @@ void main() {
         ).called(1);
       });
 
-      test('correctly caches computed initial state', () async {
+      test('correctly caches computed initial state', () {
         dynamic cachedState;
         when<dynamic>(() => storage.read(any())).thenReturn(cachedState);
         when(

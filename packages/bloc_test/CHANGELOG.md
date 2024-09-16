@@ -1,3 +1,105 @@
+# 9.1.7
+
+- chore: update copyright year
+- chore: update sponsors
+
+# 9.1.6
+
+- chore: update sponsors ([#4054](https://github.com/felangel/bloc/pull/4054))
+
+# 9.1.5
+
+- fix: `blocTest` supports `async` `expect` ([#3976](https://github.com/felangel/bloc/pull/3976))
+
+# 9.1.4
+
+- deps: support `mocktail: ^1.0.0` ([#3917](https://github.com/felangel/bloc/pull/3917))
+- chore: add topics to `pubspec.yaml` ([#3914](https://github.com/felangel/bloc/pull/3914))
+
+# 9.1.3
+
+- fix: test timeouts due to uncaught exceptions which occur with `package:test ^1.22.2` ([#3854](https://github.com/felangel/bloc/pull/3854))
+
+# 9.1.2
+
+- docs: upgrade to Dart 3
+- refactor: standardize analysis_options
+
+# 9.1.1
+
+- chore: upgrade to `bloc ^8.1.1` ([#3723](https://github.com/felangel/bloc/pull/3723))
+  - refactor: `BlocObserver` instances to use `const` constructors ([#3713](https://github.com/felangel/bloc/pull/3713))
+- refactor: upgrade to Dart 2.19 ([#3699](https://github.com/felangel/bloc/pull/3699))
+  - remove deprecated `invariant_booleans` lint rule
+- docs: fix snippet in `README` ([#3552](https://github.com/felangel/bloc/pull/3552))
+
+# 9.1.0
+
+- feat: upgrade to `bloc: ^8.1.0` ([#3502](https://github.com/felangel/bloc/pull/3502))
+
+# 9.0.3
+
+- chore: support for mocktail v0.3.0 ([#3252](https://github.com/felangel/bloc/pull/3252))
+- docs: update GetStream utm tags ([#3136](https://github.com/felangel/bloc/pull/3136))
+- docs: update VGV sponsors logo ([#3125](https://github.com/felangel/bloc/pull/3125))
+
+# 9.0.2
+
+- fix: throw uncaught exceptions ([#3070](https://github.com/felangel/bloc/pull/3070))
+- chore: upgrade to `bloc v8.0.2`
+- docs: update example to follow naming conventions ([#3032](https://github.com/felangel/bloc/pull/3032))
+
+# 9.0.1
+
+- chore: upgrade to `bloc v8.0.1`
+
+# 9.0.0
+
+- **BREAKING**: feat: upgrade to `bloc v8.0.0`
+- feat: `MockBloc` no longer implicitly requires `registerFallbackValue` for events and states
+
+# 9.0.0-dev.5
+
+- **BREAKING**: feat: upgrade to `bloc v8.0.0-dev.5`
+
+# 9.0.0-dev.4
+
+- **BREAKING**: feat: upgrade to `bloc v8.0.0-dev.4`
+
+# 9.0.0-dev.3
+
+- **BREAKING**: feat: upgrade to `bloc v8.0.0-dev.3`
+
+# 9.0.0-dev.2
+
+- **BREAKING**: feat: upgrade to `mocktail v0.2.0`
+
+# 9.0.0-dev.1
+
+- **BREAKING**: feat: upgrade to `bloc v8.0.0-dev.2`
+- feat: `MockBloc` no longer implicitly requires `registerFallbackValue` for events and states
+
+# 8.5.0
+
+- feat: prettier diffing when using `blocTest` and `expect` does not match emitted states ([#1783](https://github.com/felangel/bloc/issues/1783))
+
+# 8.4.0
+
+- feat: upgrade to `mocktail ^0.2.0`
+
+# 8.3.0
+
+- feat: accept optional tags in `blocTest`
+  - `tags` is optional and if it is passed, it declares user-defined tags that are applied to the test. These tags can be used to select or skip the test on the command line, or to do bulk test configuration.
+
+# 8.2.0
+
+- feat: upgrade to `bloc ^7.2.0`
+
+# 8.1.0
+
+- feat: add `setUp` and `tearDown` to `blocTest`
+
 # 8.0.2
 
 - fix: revert `package:mocktail` export to reduce conflicts with `package:mockito`

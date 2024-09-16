@@ -24,6 +24,12 @@ If you wish to disable this quick code action `(Bloc) Wrap with` you can do it s
 
 ![intention_settings](https://github.com/felangel/bloc/raw/master/extensions/intellij/assets/intention_settings.png)
 
+### Equatable props generator
+
+Right click and use `Generate -> Equatable Props` to automatically generate the `props` override when using `Equatable`.
+
+![equatable_props_override](https://github.com/felangel/bloc/raw/master/extensions/intellij/assets/equatable_props_override.png)
+
 ## Snippets
 
 ### Bloc
@@ -52,15 +58,18 @@ If you wish to disable this quick code action `(Bloc) Wrap with` you can do it s
 | `blocstate`         | Creates a state class                           |
 | `blocevent`         | Creates an event class                          |
 | `bloctest`          | Creates a `blocTest` with build, act and expect |
+| `mockbloc`          | Creates a class extenting `MockBloc`            |
+| `mockcubit`         | Creates a class extending `MockCubit`           |
+| `fake`              | Creates a class extending `Fake`                |
 
 ### Freezed Bloc
 
-| Shortcut     | Description                                                     |
-| ------------ | --------------------------------------------------------------- |
-| `feventwhen` | Creates a map event to state function with freeze.when function |
-| `feventmap`  | Creates a map event to state function with freeze.map function  |
-| `fstate`     | Creates a sub state                                             |
-| `fevent`     | Creates a sub event                                             |
+| Shortcut     | Description                                        |
+| ------------ | -------------------------------------------------- |
+| `feventwhen` | Creates an event handler with freeze.when function |
+| `feventmap`  | Creates an event handler with freeze.map function  |
+| `fstate`     | Creates a sub state                                |
+| `fevent`     | Creates a sub event                                |
 
 ## Deployment
 

@@ -1,6 +1,5 @@
-import 'dart:async';
-
 import 'package:bloc/bloc.dart';
+import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_dynamic_form/new_car_repository.dart';
 
@@ -10,71 +9,81 @@ part 'new_car_state.dart';
 class NewCarBloc extends Bloc<NewCarEvent, NewCarState> {
   NewCarBloc({required NewCarRepository newCarRepository})
       : _newCarRepository = newCarRepository,
-        super(const NewCarState.initial());
+        super(const NewCarState.initial()) {
+    on<NewCarEvent>(_onEvent, transformer: sequential());
+  }
 
   final NewCarRepository _newCarRepository;
 
-  @override
-  Stream<NewCarState> mapEventToState(
-    NewCarEvent event,
-  ) async* {
-    if (event is NewCarFormLoaded) {
-      yield* _mapNewCarFormLoadedToState();
-    } else if (event is NewCarBrandChanged) {
-      yield* _mapNewCarBrandChangedToState(event, state);
-    } else if (event is NewCarModelChanged) {
-      yield* _mapNewCarModelChangedToState(event, state);
-    } else if (event is NewCarYearChanged) {
-      yield _mapNewCarYearChangedToState(event);
-    }
+  Future<void> _onEvent(NewCarEvent event, Emitter<NewCarState> emit) async {
+    return switch (event) {
+      final NewCarFormLoaded e => _onNewCarFormLoaded(e, emit),
+      final NewCarBrandChanged e => _onNewCarBrandChanged(e, emit),
+      final NewCarModelChanged e => _onNewCarModelChanged(e, emit),
+      final NewCarYearChanged e => _onNewCarYearChanged(e, emit),
+    };
   }
 
-  Stream<NewCarState> _mapNewCarFormLoadedToState() async* {
-    yield const NewCarState.brandsLoadInProgress();
+  Future<void> _onNewCarFormLoaded(
+    NewCarFormLoaded event,
+    Emitter<NewCarState> emit,
+  ) async {
+    emit(const NewCarState.brandsLoadInProgress());
     final brands = await _newCarRepository.fetchBrands();
-    yield NewCarState.brandsLoadSuccess(brands: brands);
+    emit(NewCarState.brandsLoadSuccess(brands: brands));
   }
 
-  Stream<NewCarState> _mapNewCarBrandChangedToState(
+  Future<void> _onNewCarBrandChanged(
     NewCarBrandChanged event,
-    NewCarState state,
-  ) async* {
-    yield NewCarState.modelsLoadInProgress(
-      brands: state.brands,
-      brand: event.brand,
+    Emitter<NewCarState> emit,
+  ) async {
+    emit(
+      NewCarState.modelsLoadInProgress(
+        brands: state.brands,
+        brand: event.brand,
+      ),
     );
     final models = await _newCarRepository.fetchModels(brand: event.brand);
-    yield NewCarState.modelsLoadSuccess(
-      brands: state.brands,
-      brand: event.brand,
-      models: models,
+    emit(
+      NewCarState.modelsLoadSuccess(
+        brands: state.brands,
+        brand: event.brand,
+        models: models,
+      ),
     );
   }
 
-  Stream<NewCarState> _mapNewCarModelChangedToState(
+  Future<void> _onNewCarModelChanged(
     NewCarModelChanged event,
-    NewCarState state,
-  ) async* {
-    yield NewCarState.yearsLoadInProgress(
-      brands: state.brands,
-      brand: state.brand,
-      models: state.models,
-      model: event.model,
+    Emitter<NewCarState> emit,
+  ) async {
+    emit(
+      NewCarState.yearsLoadInProgress(
+        brands: state.brands,
+        brand: state.brand,
+        models: state.models,
+        model: event.model,
+      ),
     );
     final years = await _newCarRepository.fetchYears(
       brand: state.brand,
       model: event.model,
     );
-    yield NewCarState.yearsLoadSuccess(
-      brands: state.brands,
-      brand: state.brand,
-      models: state.models,
-      model: event.model,
-      years: years,
+    emit(
+      NewCarState.yearsLoadSuccess(
+        brands: state.brands,
+        brand: state.brand,
+        models: state.models,
+        model: event.model,
+        years: years,
+      ),
     );
   }
 
-  NewCarState _mapNewCarYearChangedToState(NewCarYearChanged event) {
-    return state.copyWith(year: event.year);
+  Future<void> _onNewCarYearChanged(
+    NewCarYearChanged event,
+    Emitter<NewCarState> emit,
+  ) async {
+    emit(state.copyWith(year: event.year));
   }
 }

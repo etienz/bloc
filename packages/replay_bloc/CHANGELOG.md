@@ -1,3 +1,60 @@
+# 0.2.7
+
+- refactor: use additional lint rules ([#4083](https://github.com/felangel/bloc/pull/4083))
+- chore: update copyright year
+- chore: update sponsors
+
+# 0.2.6
+
+- chore: update sponsors ([#4054](https://github.com/felangel/bloc/pull/4054))
+
+# 0.2.5
+
+- docs: fix inline doc comment macro ([#4007](https://github.com/felangel/bloc/pull/4007))
+- chore: add `topics` to `pubspec.yaml` ([#3914](https://github.com/felangel/bloc/pull/3914))
+
+# 0.2.4
+
+- docs: upgrade to Dart 3 ([#3825](https://github.com/felangel/bloc/pull/3825))
+- refactor: standardize analysis_options ([#3825](https://github.com/felangel/bloc/pull/3825))
+- chore: update sdk constraints and fix analysis warnings ([#3825](https://github.com/felangel/bloc/pull/3825))
+
+# 0.2.3
+
+- chore: add screenshots to pubspec.yaml ([#3728](https://github.com/felangel/bloc/pull/3728))
+- chore: update example to Dart 2.19 ([#3727](https://github.com/felangel/bloc/pull/3727))
+- chore: upgrade to `bloc ^8.1.1` ([#3726](https://github.com/felangel/bloc/pull/3726))
+- refactor: upgrade to Dart 2.19 ([#3699](https://github.com/felangel/bloc/pull/3699))
+  - remove deprecated `invariant_booleans` lint rule
+
+# 0.2.2
+
+- chore: upgrade to `bloc v8.1.0`
+
+# 0.2.1
+
+- chore: upgrade to `bloc v8.0.1`
+
+# 0.2.0
+
+- **BREAKING**: feat: upgrade to `bloc v8.0.0`
+
+# 0.2.0-dev.3
+
+- **BREAKING**: feat: upgrade to `bloc v8.0.0-dev.5`
+
+# 0.2.0-dev.2
+
+- **BREAKING**: feat: upgrade to `bloc v8.0.0-dev.3`
+
+# 0.2.0-dev.1
+
+- **BREAKING**: feat: upgrade to `bloc v8.0.0-dev.2`
+
+# 0.1.0
+
+- feat: upgrade to `bloc ^7.2.0`
+
 # 0.0.2
 
 - feat: add support for conditional replays via `shouldReplay`

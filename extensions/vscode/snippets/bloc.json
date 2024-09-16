@@ -3,11 +3,10 @@
     "prefix": "bloc",
     "body": [
       "class ${1:Subject}Bloc extends Bloc<$1Event, $1State> {",
-      "\t${1:Subject}Bloc() : super(${1:Subject}Initial());",
-      "",
-      "\t@override",
-      "\tStream<$1State> mapEventToState($1Event event) async* {",
-      "\t\t${3:// TODO: implement mapEventToState}",
+      "\t${1:Subject}Bloc() : super(${1:Subject}Initial()) {",
+      "\t\ton<$1Event>((event, emit) {",
+      "\t\t\t${2:// TODO: implement event handler}",
+      "\t\t});",
       "\t}",
       "}"
     ]
@@ -33,9 +32,9 @@
       "\t}",
       "",
       "\t@override",
-      "\tvoid onError(BlocBase bloc, Object error, StackTrace stacktrace) {",
+      "\tvoid onError(BlocBase bloc, Object error, StackTrace stackTrace) {",
       "\t\t${3:// TODO: implement onError}",
-      "\t\tsuper.onError(bloc, error, stacktrace);",
+      "\t\tsuper.onError(bloc, error, stackTrace);",
       "\t}",
       "",
       "\t@override",
@@ -82,6 +81,28 @@
   },
   "Import package:bloc": {
     "prefix": "importbloc",
-    "body": "import 'package:bloc/bloc.dart';"
+    "body": "import 'package:bloc/bloc.dart';",
+    "description": "import package:bloc/bloc.dart;"
+  },
+  "Register Event Handler": {
+    "prefix": "onevent",
+    "body": [
+      "on<${1:${TM_FILENAME_BASE/(.*)(?=_bloc)(_bloc)/${1:/pascalcase}/g}Event}>((event, emit) {",
+      "\t${2:// TODO: implement event handler}",
+      "});"
+    ],
+    "description": "Register a new EventHandler"
+  },
+  "Define Event Handler": {
+    "prefix": "_onevent",
+    "body": [
+      "${1|void,Future<void>|} _on${2:Event}(",
+      "\t$2 event,",
+      "\tEmitter<${3:${TM_FILENAME_BASE/(.*)(?=_bloc)(_bloc)/${1:/pascalcase}/g}State}> emit,",
+      ") ${4:async} {",
+      "\t${5:// TODO: implement event handler}",
+      "}"
+    ],
+    "description": "Define a new EventHandler"
   }
 }

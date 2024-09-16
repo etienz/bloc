@@ -1,20 +1,13 @@
 part of 'app_bloc.dart';
 
-abstract class AppEvent extends Equatable {
+sealed class AppEvent {
   const AppEvent();
-
-  @override
-  List<Object> get props => [];
 }
 
-class AppLogoutRequested extends AppEvent {}
+final class AppUserSubscriptionRequested extends AppEvent {
+  const AppUserSubscriptionRequested();
+}
 
-class AppUserChanged extends AppEvent {
-  @visibleForTesting
-  const AppUserChanged(this.user);
-
-  final User user;
-
-  @override
-  List<Object> get props => [user];
+final class AppLogoutPressed extends AppEvent {
+  const AppLogoutPressed();
 }

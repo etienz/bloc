@@ -1,3 +1,58 @@
+# 10.0.0-dev.3
+
+- chore: update copyright year
+- chore: update sponsors
+
+# 10.0.0-dev.2
+
+- chore(deps): upgrade to `package:ngdart 8.0.0-dev.4`
+- chore: add `topics` to `pubspec.yaml`
+- chore(deps): upgrade to `package:mocktail v1.0.0`
+- chore: update sponsors
+
+# 10.0.0-dev.1
+
+- docs: upgrade to Dart 3
+- refactor: standardize analysis_options
+- refactor: update sdk constraints and fix analysis warnings
+
+# 10.0.0-dev.0
+
+- **BREAKING**: refactor: upgrade `ngdart` to v8 pre-release
+
+# 9.0.0
+
+- **BREAKING**: feat: upgrade to `ngdart v7.0.0`
+- refactor: remove deprecated `invariant_booleans` lint rule
+- docs: update example to follow naming conventions
+- chore: add screenshots to `pubspec.yaml`
+
+# 8.0.0
+
+- **BREAKING**: feat: upgrade to `bloc v8.0.0`
+
+# 8.0.0-dev.3
+
+- **BREAKING**: feat: upgrade to `bloc v8.0.0-dev.5`
+
+# 8.0.0-dev.2
+
+- **BREAKING**: feat: upgrade to `bloc v8.0.0-dev.3`
+
+# 8.0.0-dev.1
+
+- **BREAKING**: feat: upgrade to `bloc v8.0.0-dev.2`
+
+# 7.1.0
+
+- feat: upgrade to `bloc ^7.2.0`
+
+# 7.0.0
+
+- **BREAKING**: refactor: upgrade to `angular ^7.0.0`
+- **BREAKING**: refactor: upgrade to `bloc ^7.0.0`
+- **BREAKING**: refactor upgrade to null safety (`dart >= 2.12.0`)
+
 # 6.0.1
 
 - Fix CHANGELOG formatting

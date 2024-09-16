@@ -1,14 +1,9 @@
 import 'dart:async';
 
-import 'package:bloc/bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
-
-/// Mixin which allows `MultiBlocListener` to infer the types
-/// of multiple [BlocListener]s.
-mixin BlocListenerSingleChildWidget on SingleChildWidget {}
 
 /// Signature for the `listener` function which takes the `BuildContext` along
 /// with the `state` and is responsible for executing in response to
@@ -74,18 +69,18 @@ typedef BlocListenerCondition<S> = bool Function(S previous, S current);
 ///   },
 ///   listener: (context, state) {
 ///     // do stuff here based on BlocA's state
-///   }
+///   },
 ///   child: Container(),
 /// )
 /// ```
 /// {@endtemplate}
-class BlocListener<B extends BlocBase<S>, S> extends BlocListenerBase<B, S>
-    with BlocListenerSingleChildWidget {
+class BlocListener<B extends StateStreamable<S>, S>
+    extends BlocListenerBase<B, S> {
   /// {@macro bloc_listener}
   /// {@macro bloc_listener_listen_when}
   const BlocListener({
-    Key? key,
     required BlocWidgetListener<S> listener,
+    Key? key,
     B? bloc,
     BlocListenerCondition<S>? listenWhen,
     Widget? child,
@@ -105,12 +100,12 @@ class BlocListener<B extends BlocBase<S>, S> extends BlocListenerBase<B, S>
 /// The type of the state and what happens with each state change
 /// is defined by sub-classes.
 /// {@endtemplate}
-abstract class BlocListenerBase<B extends BlocBase<S>, S>
+abstract class BlocListenerBase<B extends StateStreamable<S>, S>
     extends SingleChildStatefulWidget {
   /// {@macro bloc_listener_base}
   const BlocListenerBase({
-    Key? key,
     required this.listener,
+    Key? key,
     this.bloc,
     this.child,
     this.listenWhen,
@@ -135,9 +130,23 @@ abstract class BlocListenerBase<B extends BlocBase<S>, S>
   @override
   SingleChildState<BlocListenerBase<B, S>> createState() =>
       _BlocListenerBaseState<B, S>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<B?>('bloc', bloc))
+      ..add(ObjectFlagProperty<BlocWidgetListener<S>>.has('listener', listener))
+      ..add(
+        ObjectFlagProperty<BlocListenerCondition<S>?>.has(
+          'listenWhen',
+          listenWhen,
+        ),
+      );
+  }
 }
 
-class _BlocListenerBaseState<B extends BlocBase<S>, S>
+class _BlocListenerBaseState<B extends StateStreamable<S>, S>
     extends SingleChildState<BlocListenerBase<B, S>> {
   StreamSubscription<S>? _subscription;
   late B _bloc;
@@ -182,7 +191,15 @@ class _BlocListenerBaseState<B extends BlocBase<S>, S>
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
-    if (widget.bloc == null) context.select<B, int>(identityHashCode);
+    assert(
+      child != null,
+      '''${widget.runtimeType} used outside of MultiBlocListener must specify a child''',
+    );
+    if (widget.bloc == null) {
+      // Trigger a rebuild if the bloc reference has changed.
+      // See https://github.com/felangel/bloc/issues/2127.
+      context.select<B, bool>((bloc) => identical(_bloc, bloc));
+    }
     return child!;
   }
 
@@ -194,6 +211,7 @@ class _BlocListenerBaseState<B extends BlocBase<S>, S>
 
   void _subscribe() {
     _subscription = _bloc.stream.listen((state) {
+      if (!mounted) return;
       if (widget.listenWhen?.call(_previousState, state) ?? true) {
         widget.listener(context, state);
       }

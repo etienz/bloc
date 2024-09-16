@@ -1,3 +1,98 @@
+# 8.1.6
+
+- docs: fix gallery image urls ([#4184](https://github.com/felangel/bloc/pull/4184))
+
+# 8.1.5
+
+- feat: override `debugFillProperties` ([#4082](https://github.com/felangel/bloc/pull/4082))
+- docs: add missing comma to `BlocListener` API docs ([#4106](https://github.com/felangel/bloc/pull/4106))
+- chore: update copyright year
+- chore: update sponsors
+
+# 8.1.4
+
+- chore: update sponsors ([#4054](https://github.com/felangel/bloc/pull/4054))
+- chore: adjust `example` themes
+- chore: fix `require_trailing_commas` ([#3977](https://github.com/felangel/bloc/pull/3977))
+- chore: add `topics` to `pubspec.yaml` ([#3914](https://github.com/felangel/bloc/pull/3914))
+
+# 8.1.3
+
+- docs: remove graphql sample references from README ([#3820](https://github.com/felangel/bloc/pull/3820))
+- docs: upgrade to Dart 3 ([#3809](https://github.com/felangel/bloc/pull/3820))
+- refactor: standardize analysis_options ([#3809](https://github.com/felangel/bloc/pull/3820))
+- refactor: update sdk constraints and fix analysis warnings ([#3809](https://github.com/felangel/bloc/pull/3820))
+
+# 8.1.2
+
+- chore: add screenshots to `pubspec.yaml` ([#3717](https://github.com/felangel/bloc/pull/3717))
+- chore(deps): upgrade to `bloc ^8.1.1` ([#3716](https://github.com/felangel/bloc/pull/3716))
+- chore: update example to Dart 2.19 ([#3715](https://github.com/felangel/bloc/pull/3715))
+- refactor: `BlocObserver` instances to use `const` constructors ([#3713](https://github.com/felangel/bloc/pull/3713))
+- refactor: remove unnecessary single child widget mixins ([#3675](https://github.com/felangel/bloc/pull/3675))
+- refactor: upgrade to Flutter 3.7 ([#3699](https://github.com/felangel/bloc/pull/3699))
+  - remove deprecated `invariant_booleans` lint rule
+
+# 8.1.1
+
+- chore: remove dependency overrides from example to fix pana score
+
+# 8.1.0
+
+- feat: upgrade to `bloc: ^8.1.0`
+- chore: upgrade example to latest bloc and hydrated_bloc ([#3481](https://github.com/felangel/bloc/pull/3481))
+- docs: update GetStream utm tags ([#3136](https://github.com/felangel/bloc/pull/3136))
+- docs: update VGV sponsors logo ([#3125](https://github.com/felangel/bloc/pull/3125))
+
+# 8.0.1
+
+- refactor: use core interfaces from `bloc v8.0.2` ([#3012](https://github.com/felangel/bloc/pull/3012))
+- docs: update example to follow naming conventions ([#3027](https://github.com/felangel/bloc/pull/3027))
+
+# 8.0.0
+
+- **BREAKING**: feat: upgrade to `bloc v8.0.0`
+
+# 8.0.0-dev.3
+
+- **BREAKING**: feat: upgrade to `bloc v8.0.0-dev.5`
+
+# 8.0.0-dev.2
+
+- **BREAKING**: feat: upgrade to `bloc v8.0.0-dev.3`
+
+# 8.0.0-dev.1
+
+- **BREAKING**: feat: upgrade to `bloc v8.0.0-dev.2`
+
+# 7.3.3
+
+- fix: add missing child assertion to `BlocListener` and `BlocProvider` ([#2924](https://github.com/felangel/bloc/pull/2924))
+
+# 7.3.2
+
+- fix: `BlocProvider` explicitly default `lazy` to `true` to support `avoid_redundant_argument_values` ([#2917](https://github.com/felangel/bloc/pull/2917))
+
+# 7.3.1
+
+- fix: determine bloc reference changes via `identical`
+  - Previously `identityHashCode` was used to determine if the bloc reference had changed to trigger a rebuild ([#2482](https://github.com/felangel/bloc/pull/2482)) however, it's possible for different bloc references to have the same `hashCode` as a result of hash collisions. The fix uses `identical` to determine whether the bloc reference has changed.
+- docs: add inline docs to library
+- docs: minor improvements to example and `README`
+- chore: remove unneeded imports
+
+# 7.3.0
+
+- feat: upgrade to `bloc: ^7.2.0`
+
+# 7.2.0
+
+- feat: upgrade to `provider: ^6.0.0`
+
+# 7.1.0
+
+- feat: add `BlocSelector` widget
+
 # 7.0.1
 
 - fix: `BlocConsumer`, `BlocBuilder`, and `BlocListener` depend on bloc/cubit instance

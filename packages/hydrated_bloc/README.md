@@ -1,12 +1,11 @@
 <p align="center">
-  <img src="https://github.com/felangel/bloc/raw/master/docs/assets/hydrated_bloc_logo.png" height="100" alt="Hydrated Bloc">
+  <img src="https://github.com/felangel/bloc/raw/master/assets/logos/hydrated_bloc.png" height="100" alt="Hydrated Bloc">
 </p>
 
 <p align="center">
   <a href="https://github.com/felangel/bloc/actions"><img src="https://github.com/felangel/bloc/workflows/build/badge.svg" alt="build"></a>
-  <a href="https://codecov.io/gh/felangel/bloc"><img src="https://codecov.io/gh/felangel/Bloc/branch/master/graph/badge.svg" alt="codecov"></a>
+  <a href="https://codecov.io/gh/felangel/bloc"><img src="https://codecov.io/gh/felangel/bloc/branch/master/graph/badge.svg" alt="codecov"></a>
   <a href="https://github.com/felangel/bloc"><img src="https://img.shields.io/github/stars/felangel/bloc.svg?style=flat&logo=github&colorB=deeppink&label=stars" alt="Star on Github"></a>
-  <a href="https://github.com/tenhobi/effective_dart"><img src="https://img.shields.io/badge/style-effective_dart-40c4ff.svg" alt="style: effective dart"></a>
   <a href="https://flutter.dev/docs/development/data-and-backend/state-mgmt/options#bloc--rx"><img src="https://img.shields.io/badge/flutter-website-deepskyblue.svg" alt="Flutter Website"></a>
   <a href="https://github.com/Solido/awesome-flutter#standard"><img src="https://img.shields.io/badge/awesome-flutter-blue.svg?longCache=true" alt="Awesome Flutter"></a>
   <a href="https://fluttersamples.com"><img src="https://img.shields.io/badge/flutter-samples-teal.svg?longCache=true" alt="Flutter Samples"></a>
@@ -25,15 +24,29 @@ An extension to [package:bloc](https://github.com/felangel/bloc) which automatic
 
 Our top sponsors are shown below! [[Become a Sponsor](https://github.com/sponsors/felangel)]
 
-<table>    
+<table style="background-color: white; border: 1px solid black">
     <tbody>
         <tr>
-            <td align="center">
-                <a href="https://verygood.ventures"><img src="https://raw.githubusercontent.com/felangel/bloc/master/docs/assets/vgv_logo.png" width="120"/></a>
+            <td align="center" style="border: 1px solid black">
+                <a href="https://shorebird.dev"><img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/sponsors/shorebird.png" width="225"/></a>
             </td>
-            <td align="center">
-                <a href="https://getstream.io/chat/?utm_source=github&utm_medium=bloc-flutter&utm_campaign=oss_sponsorship" target="_blank"><img width="250px" src="https://stream-blog.s3.amazonaws.com/blog/wp-content/uploads/fc148f0fc75d02841d017bb36e14e388/Stream-logo-with-background-.png"/></a><br/><span><a href="https://getstream.io/chat/flutter/tutorial/?utm_source=github&utm_medium=bloc-flutter&utm_campaign=oss_sponsorship" target="_blank">Try the Flutter Chat Tutorial &nbsp💬</a></span>
-            </td>            
+            <td align="center" style="border: 1px solid black">
+                <a href="https://www.monterail.com/services/flutter-development/?utm_source=bloc&utm_medium=logo&utm_campaign=flutter"><img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/sponsors/monterail.png" width="225"/></a>
+            </td>
+            <td align="center" style="border: 1px solid black">
+                <a href="https://getstream.io/chat/flutter/tutorial/?utm_source=Github&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Github_Jan2022_FlutterChat&utm_term=bloc"><img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/sponsors/stream.png" width="225"/></a>
+            </td>
+        </tr>
+        <tr>
+            <td align="center" style="border: 1px solid black">
+                <a href="https://www.miquido.com/flutter-development-company/?utm_source=github&utm_medium=sponsorship&utm_campaign=bloc-silver-tier&utm_term=flutter-development-company&utm_content=miquido-logo"><img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/sponsors/miquido.png" width="225"/></a>
+            </td>
+            <td align="center" style="border: 1px solid black">
+                <a href="https://bit.ly/parabeac_flutterbloc"><img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/sponsors/parabeac.png" width="225"/></a>
+            </td>
+            <td align="center" style="border: 1px solid black">
+                <a href="https://www.netguru.com/services/flutter-app-development?utm_campaign=%5BS%5D%5BMob%5D%20Flutter&utm_source=github&utm_medium=sponsorship&utm_term=bloclibrary"><img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/sponsors/netguru.png" width="225"/></a>
+            </td>
         </tr>
     </tbody>
 </table>
@@ -44,17 +57,19 @@ Our top sponsors are shown below! [[Become a Sponsor](https://github.com/sponsor
 
 `hydrated_bloc` exports a `Storage` interface which means it can work with any storage provider. Out of the box, it comes with its own implementation: `HydratedStorage`.
 
-`HydratedStorage` is built on top of [hive](https://pub.dev/packages/hive) for a platform-agnostic, performant storage layer. See the complete [example](example) for more details.
+`HydratedStorage` is built on top of [hive](https://pub.dev/packages/hive) for a platform-agnostic, performant storage layer. See the complete [example](https://github.com/felangel/bloc/blob/master/packages/hydrated_bloc/example) for more details.
 
 ## Usage
 
 ### Setup `HydratedStorage`
 
 ```dart
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   HydratedBloc.storage = await HydratedStorage.build(
-    storageDirectory: await getTemporaryDirectory(),
+    storageDirectory: kIsWeb
+        ? HydratedStorage.webStorageDirectory
+        : await getApplicationDocumentsDirectory(),
   );
   runApp(App());
 }
@@ -79,18 +94,12 @@ class CounterCubit extends HydratedCubit<int> {
 ### Create a HydratedBloc
 
 ```dart
-enum CounterEvent { increment }
+sealed class CounterEvent {}
+final class CounterIncrementPressed extends CounterEvent {}
 
 class CounterBloc extends HydratedBloc<CounterEvent, int> {
-  CounterBloc() : super(0);
-
-  @override
-  Stream<int> mapEventToState(CounterEvent event) async* {
-    switch (event) {
-      case CounterEvent.increment:
-        yield state + 1;
-        break;
-    }
+  CounterBloc() : super(0) {
+    on<CounterIncrementPressed>((event, emit) => emit(state + 1));
   }
 
   @override
@@ -126,7 +135,7 @@ class CounterCubit extends Cubit<int> with HydratedMixin {
 Any `storageDirectory` can be used when creating an instance of `HydratedStorage`:
 
 ```dart
-HydratedBloc.storage = await HydratedStorage.build(
+final storage = await HydratedStorage.build(
   storageDirectory: await getApplicationDocumentsDirectory(),
 );
 ```
@@ -163,8 +172,44 @@ class MyHydratedStorage implements Storage {
 
 ```dart
 // main.dart
-
 HydratedBloc.storage = MyHydratedStorage();
+runApp(MyApp());
+```
+
+## Testing
+
+When writing unit tests for code that uses `HydratedBloc`, it is recommended to stub the `Storage` implementation using `package:mocktail`.
+
+```dart
+import 'package:flutter_test/flutter_test.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:mocktail/mocktail.dart';
+
+class MockStorage extends Mock implements Storage {}
+
+void main() {
+  late Storage storage;
+
+  setUp(() {
+    storage = MockStorage();
+    when(
+      () => storage.write(any(), any<dynamic>()),
+    ).thenAnswer((_) async {});
+    HydratedBloc.storage = storage;
+  });
+
+  // ...
+}
+```
+
+You can also stub the `storage.read` API in individual tests to return cached state:
+
+```dart
+testWidgets('...', (tester) async {
+  when<dynamic>(() => storage.read('$MyBloc')).thenReturn(MyState().toJson());
+
+  // ...
+});
 ```
 
 ## Dart Versions

@@ -1,23 +1,25 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc_with_stream/bloc/ticker_bloc.dart';
 import 'package:flutter_bloc_with_stream/ticker/ticker.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockTicker extends Mock implements Ticker {}
+class _MockTicker extends Mock implements Ticker {}
 
 void main() {
-  group('TickerBloc', () {
+  group(TickerBloc, () {
     late Ticker ticker;
 
     setUp(() {
-      ticker = MockTicker();
+      ticker = _MockTicker();
       when(ticker.tick).thenAnswer(
         (_) => Stream<int>.fromIterable([1, 2, 3]),
       );
     });
 
-    test('initial state is TickerInitial', () {
+    test('initial state is $TickerInitial', () {
       expect(TickerBloc(ticker).state, TickerInitial());
     });
 
@@ -28,28 +30,29 @@ void main() {
     );
 
     blocTest<TickerBloc, TickerState>(
-      'emits TickerTickSuccess from 1 to 3',
+      'emits $TickerTickSuccess from 1 to 3',
       build: () => TickerBloc(ticker),
       act: (bloc) => bloc.add(TickerStarted()),
       expect: () => <TickerState>[
-        const TickerTickSuccess(1),
-        const TickerTickSuccess(2),
-        const TickerTickSuccess(3),
+        TickerTickSuccess(1),
+        TickerTickSuccess(2),
+        TickerTickSuccess(3),
+        TickerComplete(),
       ],
     );
 
     blocTest<TickerBloc, TickerState>(
-      'emits TickerTickSuccess '
-      'from 1 to 3 and restarts',
+      'emits $TickerTickSuccess '
+      'from 1 to 3 and cancels previous subscription',
       build: () => TickerBloc(ticker),
-      act: (bloc) => bloc..add(TickerStarted())..add(TickerStarted()),
+      act: (bloc) => bloc
+        ..add(TickerStarted())
+        ..add(TickerStarted()),
       expect: () => <TickerState>[
-        const TickerTickSuccess(1),
-        const TickerTickSuccess(2),
-        const TickerTickSuccess(3),
-        const TickerTickSuccess(1),
-        const TickerTickSuccess(2),
-        const TickerTickSuccess(3),
+        TickerTickSuccess(1),
+        TickerTickSuccess(2),
+        TickerTickSuccess(3),
+        TickerComplete(),
       ],
     );
   });

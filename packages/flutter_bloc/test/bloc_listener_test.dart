@@ -1,10 +1,10 @@
-import 'package:bloc/bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class CounterCubit extends Cubit<int> {
-  CounterCubit() : super(0);
+  CounterCubit({int seed = 0}) : super(seed);
 
   void increment() => emit(state + 1);
 }
@@ -55,6 +55,7 @@ class _MyAppState extends State<MyApp> {
                 key: const Key('cubit_listener_noop_button'),
                 child: const SizedBox(),
                 onPressed: () {
+                  // ignore: no_self_assignments
                   setState(() => _counterCubit = _counterCubit);
                 },
               ),
@@ -73,6 +74,23 @@ class _MyAppState extends State<MyApp> {
 
 void main() {
   group('BlocListener', () {
+    testWidgets(
+        'throws AssertionError '
+        'when child is not specified', (tester) async {
+      const expected =
+          '''BlocListener<CounterCubit, int> used outside of MultiBlocListener must specify a child''';
+      await tester.pumpWidget(
+        BlocListener<CounterCubit, int>(
+          bloc: CounterCubit(),
+          listener: (context, state) {},
+        ),
+      );
+      expect(
+        tester.takeException(),
+        isA<AssertionError>().having((e) => e.message, 'message', expected),
+      );
+    });
+
     testWidgets('renders child properly', (tester) async {
       const targetKey = Key('cubit_listener_container');
       await tester.pumpWidget(
@@ -134,12 +152,14 @@ void main() {
       final resetCubitFinder = find.byKey(
         const Key('cubit_listener_reset_button'),
       );
-      await tester.pumpWidget(MyApp(
-        onListenerCalled: (_, state) {
-          listenerCallCount++;
-          latestState = state;
-        },
-      ));
+      await tester.pumpWidget(
+        MyApp(
+          onListenerCalled: (_, state) {
+            listenerCallCount++;
+            latestState = state;
+          },
+        ),
+      );
 
       await tester.tap(incrementFinder);
       await tester.pump();
@@ -170,12 +190,14 @@ void main() {
       final noopCubitFinder = find.byKey(
         const Key('cubit_listener_noop_button'),
       );
-      await tester.pumpWidget(MyApp(
-        onListenerCalled: (context, state) {
-          listenerCallCount++;
-          latestState = state;
-        },
-      ));
+      await tester.pumpWidget(
+        MyApp(
+          onListenerCalled: (context, state) {
+            listenerCallCount++;
+            latestState = state;
+          },
+        ),
+      );
 
       await tester.tap(incrementFinder);
       await tester.pump();
@@ -248,7 +270,10 @@ void main() {
           child: const SizedBox(),
         ),
       );
-      counterCubit..increment()..increment()..increment();
+      counterCubit
+        ..increment()
+        ..increment()
+        ..increment();
       await tester.pump();
 
       expect(states, expectedStates);
@@ -277,7 +302,10 @@ void main() {
           child: const SizedBox(),
         ),
       );
-      counterCubit..increment()..increment()..increment();
+      counterCubit
+        ..increment()
+        ..increment()
+        ..increment();
       await tester.pump();
 
       expect(states, [3]);
@@ -444,7 +472,7 @@ void main() {
         'updates subscription '
         'when provided bloc is changed', (tester) async {
       final firstCounterCubit = CounterCubit();
-      final secondCounterCubit = CounterCubit()..emit(100);
+      final secondCounterCubit = CounterCubit(seed: 100);
 
       final states = <int>[];
       const expectedStates = [1, 101];
@@ -477,6 +505,31 @@ void main() {
       await tester.pump();
 
       expect(states, expectedStates);
+    });
+
+    testWidgets('overrides debugFillProperties', (tester) async {
+      final builder = DiagnosticPropertiesBuilder();
+
+      BlocListener(
+        bloc: CounterCubit(),
+        listener: (context, state) {},
+        listenWhen: (previous, current) => previous != current,
+        child: const SizedBox(),
+      ).debugFillProperties(builder);
+
+      final description = builder.properties
+          .where((node) => !node.isFiltered(DiagnosticLevel.info))
+          .map((node) => node.toString())
+          .toList();
+
+      expect(
+        description,
+        <String>[
+          "bloc: Instance of 'CounterCubit'",
+          'has listener',
+          'has listenWhen',
+        ],
+      );
     });
   });
 }

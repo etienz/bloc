@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:formz/formz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_login/login/login.dart';
+import 'package:formz/formz.dart';
 
 class LoginForm extends StatelessWidget {
+  const LoginForm({super.key});
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<LoginBloc, LoginState>(
       listener: (context, state) {
-        if (state.status.isSubmissionFailure) {
+        if (state.status.isFailure) {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
@@ -36,19 +38,19 @@ class LoginForm extends StatelessWidget {
 class _UsernameInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<LoginBloc, LoginState>(
-      buildWhen: (previous, current) => previous.username != current.username,
-      builder: (context, state) {
-        return TextField(
-          key: const Key('loginForm_usernameInput_textField'),
-          onChanged: (username) =>
-              context.read<LoginBloc>().add(LoginUsernameChanged(username)),
-          decoration: InputDecoration(
-            labelText: 'username',
-            errorText: state.username.invalid ? 'invalid username' : null,
-          ),
-        );
+    final displayError = context.select(
+      (LoginBloc bloc) => bloc.state.username.displayError,
+    );
+
+    return TextField(
+      key: const Key('loginForm_usernameInput_textField'),
+      onChanged: (username) {
+        context.read<LoginBloc>().add(LoginUsernameChanged(username));
       },
+      decoration: InputDecoration(
+        labelText: 'username',
+        errorText: displayError != null ? 'invalid username' : null,
+      ),
     );
   }
 }
@@ -56,20 +58,20 @@ class _UsernameInput extends StatelessWidget {
 class _PasswordInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<LoginBloc, LoginState>(
-      buildWhen: (previous, current) => previous.password != current.password,
-      builder: (context, state) {
-        return TextField(
-          key: const Key('loginForm_passwordInput_textField'),
-          onChanged: (password) =>
-              context.read<LoginBloc>().add(LoginPasswordChanged(password)),
-          obscureText: true,
-          decoration: InputDecoration(
-            labelText: 'password',
-            errorText: state.password.invalid ? 'invalid password' : null,
-          ),
-        );
+    final displayError = context.select(
+      (LoginBloc bloc) => bloc.state.password.displayError,
+    );
+
+    return TextField(
+      key: const Key('loginForm_passwordInput_textField'),
+      onChanged: (password) {
+        context.read<LoginBloc>().add(LoginPasswordChanged(password));
       },
+      obscureText: true,
+      decoration: InputDecoration(
+        labelText: 'password',
+        errorText: displayError != null ? 'invalid password' : null,
+      ),
     );
   }
 }
@@ -77,21 +79,20 @@ class _PasswordInput extends StatelessWidget {
 class _LoginButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<LoginBloc, LoginState>(
-      buildWhen: (previous, current) => previous.status != current.status,
-      builder: (context, state) {
-        return state.status.isSubmissionInProgress
-            ? const CircularProgressIndicator()
-            : ElevatedButton(
-                key: const Key('loginForm_continue_raisedButton'),
-                child: const Text('Login'),
-                onPressed: state.status.isValidated
-                    ? () {
-                        context.read<LoginBloc>().add(const LoginSubmitted());
-                      }
-                    : null,
-              );
-      },
+    final isInProgressOrSuccess = context.select(
+      (LoginBloc bloc) => bloc.state.status.isInProgressOrSuccess,
+    );
+
+    if (isInProgressOrSuccess) return const CircularProgressIndicator();
+
+    final isValid = context.select((LoginBloc bloc) => bloc.state.isValid);
+
+    return ElevatedButton(
+      key: const Key('loginForm_continue_raisedButton'),
+      onPressed: isValid
+          ? () => context.read<LoginBloc>().add(const LoginSubmitted())
+          : null,
+      child: const Text('Login'),
     );
   }
 }

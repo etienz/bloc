@@ -7,34 +7,51 @@ import 'package:flutter_login/login/login.dart';
 import 'package:flutter_login/splash/splash.dart';
 import 'package:user_repository/user_repository.dart';
 
-class App extends StatelessWidget {
-  const App({
-    Key? key,
-    required this.authenticationRepository,
-    required this.userRepository,
-  }) : super(key: key);
+class App extends StatefulWidget {
+  const App({super.key});
 
-  final AuthenticationRepository authenticationRepository;
-  final UserRepository userRepository;
+  @override
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  late final AuthenticationRepository _authenticationRepository;
+  late final UserRepository _userRepository;
+
+  @override
+  void initState() {
+    super.initState();
+    _authenticationRepository = AuthenticationRepository();
+    _userRepository = UserRepository();
+  }
+
+  @override
+  void dispose() {
+    _authenticationRepository.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return RepositoryProvider.value(
-      value: authenticationRepository,
+      value: _authenticationRepository,
       child: BlocProvider(
+        lazy: false,
         create: (_) => AuthenticationBloc(
-          authenticationRepository: authenticationRepository,
-          userRepository: userRepository,
-        ),
-        child: AppView(),
+          authenticationRepository: _authenticationRepository,
+          userRepository: _userRepository,
+        )..add(AuthenticationSubscriptionRequested()),
+        child: const AppView(),
       ),
     );
   }
 }
 
 class AppView extends StatefulWidget {
+  const AppView({super.key});
+
   @override
-  _AppViewState createState() => _AppViewState();
+  State<AppView> createState() => _AppViewState();
 }
 
 class _AppViewState extends State<AppView> {
@@ -55,14 +72,12 @@ class _AppViewState extends State<AppView> {
                   HomePage.route(),
                   (route) => false,
                 );
-                break;
               case AuthenticationStatus.unauthenticated:
                 _navigator.pushAndRemoveUntil<void>(
                   LoginPage.route(),
                   (route) => false,
                 );
-                break;
-              default:
+              case AuthenticationStatus.unknown:
                 break;
             }
           },

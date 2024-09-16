@@ -1,7 +1,6 @@
-import 'package:bloc/bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:provider/provider.dart';
 
 /// Signature for the `builder` function which takes the `BuildContext` and
 /// [state] and is responsible for returning a widget which is to be rendered.
@@ -19,11 +18,11 @@ typedef BlocBuilderCondition<S> = bool Function(S previous, S current);
 /// reduce the amount of boilerplate code needed as well as [bloc]-specific
 /// performance improvements.
 
-/// Please refer to `BlocListener` if you want to "do" anything in response to
+/// Please refer to [BlocListener] if you want to "do" anything in response to
 /// `state` changes such as navigation, showing a dialog, etc...
 ///
 /// If the [bloc] parameter is omitted, [BlocBuilder] will automatically
-/// perform a lookup using [BlocProvider] and the current `BuildContext`.
+/// perform a lookup using [BlocProvider] and the current [BuildContext].
 ///
 /// ```dart
 /// BlocBuilder<BlocA, BlocAState>(
@@ -34,7 +33,7 @@ typedef BlocBuilderCondition<S> = bool Function(S previous, S current);
 /// ```
 ///
 /// Only specify the [bloc] if you wish to provide a [bloc] that is otherwise
-/// not accessible via [BlocProvider] and the current `BuildContext`.
+/// not accessible via [BlocProvider] and the current [BuildContext].
 ///
 /// ```dart
 /// BlocBuilder<BlocA, BlocAState>(
@@ -71,12 +70,13 @@ typedef BlocBuilderCondition<S> = bool Function(S previous, S current);
 /// )
 /// ```
 /// {@endtemplate}
-class BlocBuilder<B extends BlocBase<S>, S> extends BlocBuilderBase<B, S> {
+class BlocBuilder<B extends StateStreamable<S>, S>
+    extends BlocBuilderBase<B, S> {
   /// {@macro bloc_builder}
   /// {@macro bloc_builder_build_when}
   const BlocBuilder({
-    Key? key,
     required this.builder,
+    Key? key,
     B? bloc,
     BlocBuilderCondition<S>? buildWhen,
   }) : super(key: key, bloc: bloc, buildWhen: buildWhen);
@@ -89,6 +89,14 @@ class BlocBuilder<B extends BlocBase<S>, S> extends BlocBuilderBase<B, S> {
 
   @override
   Widget build(BuildContext context, S state) => builder(context, state);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      ObjectFlagProperty<BlocWidgetBuilder<S>>.has('builder', builder),
+    );
+  }
 }
 
 /// {@template bloc_builder_base}
@@ -99,7 +107,7 @@ class BlocBuilder<B extends BlocBase<S>, S> extends BlocBuilderBase<B, S> {
 /// so far. The type of the state and how it is updated with each interaction
 /// is defined by sub-classes.
 /// {@endtemplate}
-abstract class BlocBuilderBase<B extends BlocBase<S>, S>
+abstract class BlocBuilderBase<B extends StateStreamable<S>, S>
     extends StatefulWidget {
   /// {@macro bloc_builder_base}
   const BlocBuilderBase({Key? key, this.bloc, this.buildWhen})
@@ -118,9 +126,22 @@ abstract class BlocBuilderBase<B extends BlocBase<S>, S>
 
   @override
   State<BlocBuilderBase<B, S>> createState() => _BlocBuilderBaseState<B, S>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        ObjectFlagProperty<BlocBuilderCondition<S>?>.has(
+          'buildWhen',
+          buildWhen,
+        ),
+      )
+      ..add(DiagnosticsProperty<B?>('bloc', bloc));
+  }
 }
 
-class _BlocBuilderBaseState<B extends BlocBase<S>, S>
+class _BlocBuilderBaseState<B extends StateStreamable<S>, S>
     extends State<BlocBuilderBase<B, S>> {
   late B _bloc;
   late S _state;
@@ -155,7 +176,11 @@ class _BlocBuilderBaseState<B extends BlocBase<S>, S>
 
   @override
   Widget build(BuildContext context) {
-    if (widget.bloc == null) context.select<B, int>(identityHashCode);
+    if (widget.bloc == null) {
+      // Trigger a rebuild if the bloc reference has changed.
+      // See https://github.com/felangel/bloc/issues/2127.
+      context.select<B, bool>((bloc) => identical(_bloc, bloc));
+    }
     return BlocListener<B, S>(
       bloc: _bloc,
       listenWhen: widget.buildWhen,

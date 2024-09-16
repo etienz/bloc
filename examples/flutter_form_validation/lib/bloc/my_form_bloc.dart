@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_form_validation/models/models.dart';
@@ -8,53 +9,79 @@ part 'my_form_event.dart';
 part 'my_form_state.dart';
 
 class MyFormBloc extends Bloc<MyFormEvent, MyFormState> {
-  MyFormBloc() : super(const MyFormState());
-
-  @override
-  void onTransition(Transition<MyFormEvent, MyFormState> transition) {
-    print(transition);
-    super.onTransition(transition);
+  MyFormBloc() : super(const MyFormState()) {
+    on<EmailChanged>(_onEmailChanged);
+    on<PasswordChanged>(_onPasswordChanged);
+    on<EmailUnfocused>(_onEmailUnfocused);
+    on<PasswordUnfocused>(_onPasswordUnfocused);
+    on<FormSubmitted>(_onFormSubmitted);
   }
 
-  @override
-  Stream<MyFormState> mapEventToState(MyFormEvent event) async* {
-    if (event is EmailChanged) {
-      final email = Email.dirty(event.email);
-      yield state.copyWith(
-        email: email.valid ? email : Email.pure(event.email),
-        status: Formz.validate([email, state.password]),
-      );
-    } else if (event is PasswordChanged) {
-      final password = Password.dirty(event.password);
-      yield state.copyWith(
-        password: password.valid ? password : Password.pure(event.password),
-        status: Formz.validate([state.email, password]),
-      );
-    } else if (event is EmailUnfocused) {
-      final email = Email.dirty(state.email.value);
-      yield state.copyWith(
+  void _onEmailChanged(EmailChanged event, Emitter<MyFormState> emit) {
+    final email = Email.dirty(event.email);
+    emit(
+      state.copyWith(
+        email: email.isValid ? email : Email.pure(event.email),
+        isValid: Formz.validate([email, state.password]),
+        status: FormzSubmissionStatus.initial,
+      ),
+    );
+  }
+
+  void _onPasswordChanged(PasswordChanged event, Emitter<MyFormState> emit) {
+    final password = Password.dirty(event.password);
+    emit(
+      state.copyWith(
+        password: password.isValid ? password : Password.pure(event.password),
+        isValid: Formz.validate([state.email, password]),
+        status: FormzSubmissionStatus.initial,
+      ),
+    );
+  }
+
+  void _onEmailUnfocused(EmailUnfocused event, Emitter<MyFormState> emit) {
+    final email = Email.dirty(state.email.value);
+    emit(
+      state.copyWith(
         email: email,
-        status: Formz.validate([email, state.password]),
-      );
-    } else if (event is PasswordUnfocused) {
-      final password = Password.dirty(state.password.value);
-      yield state.copyWith(
+        isValid: Formz.validate([email, state.password]),
+        status: FormzSubmissionStatus.initial,
+      ),
+    );
+  }
+
+  void _onPasswordUnfocused(
+    PasswordUnfocused event,
+    Emitter<MyFormState> emit,
+  ) {
+    final password = Password.dirty(state.password.value);
+    emit(
+      state.copyWith(
         password: password,
-        status: Formz.validate([state.email, password]),
-      );
-    } else if (event is FormSubmitted) {
-      final email = Email.dirty(state.email.value);
-      final password = Password.dirty(state.password.value);
-      yield state.copyWith(
+        isValid: Formz.validate([state.email, password]),
+        status: FormzSubmissionStatus.initial,
+      ),
+    );
+  }
+
+  Future<void> _onFormSubmitted(
+    FormSubmitted event,
+    Emitter<MyFormState> emit,
+  ) async {
+    final email = Email.dirty(state.email.value);
+    final password = Password.dirty(state.password.value);
+    emit(
+      state.copyWith(
         email: email,
         password: password,
-        status: Formz.validate([email, password]),
-      );
-      if (state.status.isValidated) {
-        yield state.copyWith(status: FormzStatus.submissionInProgress);
-        await Future<void>.delayed(const Duration(seconds: 1));
-        yield state.copyWith(status: FormzStatus.submissionSuccess);
-      }
+        isValid: Formz.validate([email, password]),
+        status: FormzSubmissionStatus.initial,
+      ),
+    );
+    if (state.isValid) {
+      emit(state.copyWith(status: FormzSubmissionStatus.inProgress));
+      await Future<void>.delayed(const Duration(seconds: 1));
+      emit(state.copyWith(status: FormzSubmissionStatus.success));
     }
   }
 }

@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -14,27 +12,31 @@ void main() async {
         ? HydratedStorage.webStorageDirectory
         : await getTemporaryDirectory(),
   );
-  runApp(App());
+  runApp(const App());
 }
 
 class App extends StatelessWidget {
+  const App({super.key});
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => BrightnessCubit(),
-      child: AppView(),
+      child: const AppView(),
     );
   }
 }
 
 class AppView extends StatelessWidget {
+  const AppView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<BrightnessCubit, Brightness>(
       builder: (context, brightness) {
         return MaterialApp(
           theme: ThemeData(brightness: brightness),
-          home: CounterPage(),
+          home: const CounterPage(),
         );
       },
     );
@@ -42,68 +44,58 @@ class AppView extends StatelessWidget {
 }
 
 class CounterPage extends StatelessWidget {
+  const CounterPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider<CounterBloc>(
       create: (_) => CounterBloc(),
-      child: CounterView(),
+      child: const CounterView(),
     );
   }
 }
 
 class CounterView extends StatelessWidget {
+  const CounterView({super.key});
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     return Scaffold(
       appBar: AppBar(title: const Text('Counter')),
-      body: BlocBuilder<CounterBloc, int>(
-        builder: (BuildContext context, int state) {
-          return Center(
-            child: Text('$state', style: textTheme.headline2),
-          );
-        },
+      body: Center(
+        child: BlocBuilder<CounterBloc, int>(
+          builder: (context, state) {
+            return Text('$state', style: textTheme.displayMedium);
+          },
+        ),
       ),
       floatingActionButton: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisAlignment: MainAxisAlignment.end,
         children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 5.0),
-            child: FloatingActionButton(
-              child: const Icon(Icons.brightness_6),
-              onPressed: () {
-                context.read<BrightnessCubit>().toggleBrightness();
-              },
-            ),
+          FloatingActionButton(
+            child: const Icon(Icons.brightness_6),
+            onPressed: () => context.read<BrightnessCubit>().toggleBrightness(),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 5.0),
-            child: FloatingActionButton(
-              child: const Icon(Icons.add),
-              onPressed: () {
-                context.read<CounterBloc>().add(CounterEvent.increment);
-              },
-            ),
+          const SizedBox(height: 4),
+          FloatingActionButton(
+            child: const Icon(Icons.add),
+            onPressed: () {
+              context.read<CounterBloc>().add(CounterIncrementPressed());
+            },
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 5.0),
-            child: FloatingActionButton(
-              child: const Icon(Icons.remove),
-              onPressed: () {
-                context.read<CounterBloc>().add(CounterEvent.decrement);
-              },
-            ),
+          const SizedBox(height: 4),
+          FloatingActionButton(
+            child: const Icon(Icons.remove),
+            onPressed: () {
+              context.read<CounterBloc>().add(CounterDecrementPressed());
+            },
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 5.0),
-            child: FloatingActionButton(
-              child: const Icon(Icons.delete_forever),
-              onPressed: () async {
-                await HydratedBloc.storage.clear();
-                context.read<CounterBloc>().add(CounterEvent.reset);
-              },
-            ),
+          const SizedBox(height: 4),
+          FloatingActionButton(
+            child: const Icon(Icons.delete_forever),
+            onPressed: () => HydratedBloc.storage.clear(),
           ),
         ],
       ),
@@ -111,24 +103,16 @@ class CounterView extends StatelessWidget {
   }
 }
 
-enum CounterEvent { increment, decrement, reset }
+sealed class CounterEvent {}
+
+final class CounterIncrementPressed extends CounterEvent {}
+
+final class CounterDecrementPressed extends CounterEvent {}
 
 class CounterBloc extends HydratedBloc<CounterEvent, int> {
-  CounterBloc() : super(0);
-
-  @override
-  Stream<int> mapEventToState(CounterEvent event) async* {
-    switch (event) {
-      case CounterEvent.decrement:
-        yield state - 1;
-        break;
-      case CounterEvent.increment:
-        yield state + 1;
-        break;
-      case CounterEvent.reset:
-        yield 0;
-        break;
-    }
+  CounterBloc() : super(0) {
+    on<CounterIncrementPressed>((event, emit) => emit(state + 1));
+    on<CounterDecrementPressed>((event, emit) => emit(state - 1));
   }
 
   @override

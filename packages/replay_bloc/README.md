@@ -1,11 +1,10 @@
-<p align="center"><img src="https://raw.githubusercontent.com/felangel/bloc/master/docs/assets/replay_bloc_logo_full.png" height="100" alt="ReplayBloc"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/logos/replay_bloc.png" height="100" alt="ReplayBloc"></p>
 
 <p align="center">
   <a href="https://pub.dev/packages/replay_bloc"><img src="https://img.shields.io/pub/v/replay_bloc.svg" alt="Pub"></a>
   <a href="https://github.com/felangel/bloc/actions"><img src="https://github.com/felangel/bloc/workflows/build/badge.svg" alt="build"></a>
   <a href="https://codecov.io/gh/felangel/bloc"><img src="https://codecov.io/gh/felangel/Bloc/branch/master/graph/badge.svg" alt="codecov"></a>
   <a href="https://github.com/felangel/bloc"><img src="https://img.shields.io/github/stars/felangel/bloc.svg?style=flat&logo=github&colorB=deeppink&label=stars" alt="Star on Github"></a>
-  <a href="https://github.com/tenhobi/effective_dart"><img src="https://img.shields.io/badge/style-effective_dart-40c4ff.svg" alt="style: effective dart"></a>
   <a href="https://flutter.dev/docs/development/data-and-backend/state-mgmt/options#bloc--rx"><img src="https://img.shields.io/badge/flutter-website-deepskyblue.svg" alt="Flutter Website"></a>
   <a href="https://github.com/Solido/awesome-flutter#standard"><img src="https://img.shields.io/badge/awesome-flutter-blue.svg?longCache=true" alt="Awesome Flutter"></a>
   <a href="https://fluttersamples.com"><img src="https://img.shields.io/badge/flutter-samples-teal.svg?longCache=true" alt="Flutter Samples"></a>
@@ -24,15 +23,29 @@ An extension to [package:bloc](https://github.com/felangel/bloc) which adds auto
 
 Our top sponsors are shown below! [[Become a Sponsor](https://github.com/sponsors/felangel)]
 
-<table>    
+<table style="background-color: white; border: 1px solid black">
     <tbody>
         <tr>
-            <td align="center">
-                <a href="https://verygood.ventures"><img src="https://raw.githubusercontent.com/felangel/bloc/master/docs/assets/vgv_logo.png" width="120"/></a>
+            <td align="center" style="border: 1px solid black">
+                <a href="https://shorebird.dev"><img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/sponsors/shorebird.png" width="225"/></a>
             </td>
-            <td align="center">
-                <a href="https://getstream.io/chat/?utm_source=github&utm_medium=bloc-flutter&utm_campaign=oss_sponsorship" target="_blank"><img width="250px" src="https://stream-blog.s3.amazonaws.com/blog/wp-content/uploads/fc148f0fc75d02841d017bb36e14e388/Stream-logo-with-background-.png"/></a><br/><span><a href="https://getstream.io/chat/flutter/tutorial/?utm_source=github&utm_medium=bloc-flutter&utm_campaign=oss_sponsorship" target="_blank">Try the Flutter Chat Tutorial &nbsp💬</a></span>
-            </td>            
+            <td align="center" style="border: 1px solid black">
+                <a href="https://www.monterail.com/services/flutter-development/?utm_source=bloc&utm_medium=logo&utm_campaign=flutter"><img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/sponsors/monterail.png" width="225"/></a>
+            </td>
+            <td align="center" style="border: 1px solid black">
+                <a href="https://getstream.io/chat/flutter/tutorial/?utm_source=Github&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Github_Jan2022_FlutterChat&utm_term=bloc"><img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/sponsors/stream.png" width="225"/></a>
+            </td>
+        </tr>
+        <tr>
+            <td align="center" style="border: 1px solid black">
+                <a href="https://www.miquido.com/flutter-development-company/?utm_source=github&utm_medium=sponsorship&utm_campaign=bloc-silver-tier&utm_term=flutter-development-company&utm_content=miquido-logo"><img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/sponsors/miquido.png" width="225"/></a>
+            </td>
+            <td align="center" style="border: 1px solid black">
+                <a href="https://bit.ly/parabeac_flutterbloc"><img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/sponsors/parabeac.png" width="225"/></a>
+            </td>
+            <td align="center" style="border: 1px solid black">
+                <a href="https://www.netguru.com/services/flutter-app-development?utm_campaign=%5BS%5D%5BMob%5D%20Flutter&utm_source=github&utm_medium=sponsorship&utm_term=bloclibrary"><img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/sponsors/netguru.png" width="225"/></a>
+            </td>
         </tr>
     </tbody>
 </table>
@@ -93,20 +106,14 @@ class CounterCubit extends HydratedCubit<int> with ReplayCubitMixin {
 ```dart
 class CounterEvent extends ReplayEvent {}
 
-class Increment extends CounterEvent {}
+class CounterIncrementPressed extends CounterEvent {}
 
-class Decrement extends CounterEvent {}
+class CounterDecrementPressed extends CounterEvent {}
 
 class CounterBloc extends ReplayBloc<CounterEvent, int> {
-  CounterBloc() : super(0);
-
-  @override
-  Stream<int> mapEventToState(CounterEvent event) async* {
-    if (event is Increment) {
-      yield state + 1;
-    } else if (event is Decrement) {
-      yield state - 1;
-    }
+  CounterBloc() : super(0) {
+    on<CounterIncrementPressed>((event, emit) => emit(state + 1));
+    on<CounterDecrementPressed>((event, emit) => emit(state - 1));
   }
 }
 ```
@@ -116,10 +123,10 @@ class CounterBloc extends ReplayBloc<CounterEvent, int> {
 ```dart
 void main() {
   // trigger a state change
-  final bloc = CounterBloc()..add(Increment());
+  final bloc = CounterBloc()..add(CounterIncrementPressed());
 
   // wait for state to update
-  await bloc.first;
+  await bloc.stream.first;
   print(bloc.state); // 1
 
   // undo the change
@@ -137,22 +144,16 @@ void main() {
 If you wish to be able to use a `ReplayBloc` in conjuction with a different type of cubit like `HydratedBloc`, you can use the `ReplayBlocMixin`.
 
 ```dart
-abstract class CounterEvent with ReplayEvent {}
+sealed class CounterEvent with ReplayEvent {}
 
-class Increment extends CounterEvent {}
+final class CounterIncrementPressed extends CounterEvent {}
 
-class Decrement extends CounterEvent {}
+final class CounterDecrementPressed extends CounterEvent {}
 
 class CounterBloc extends HydratedBloc<CounterEvent, int> with ReplayBlocMixin {
-  CounterBloc() : super(0);
-
-  @override
-  Stream<int> mapEventToState(CounterEvent event) async* {
-    if (event is Increment) {
-      yield state + 1;
-    } else if (event is Decrement) {
-      yield state - 1;
-    }
+  CounterBloc() : super(0) {
+    on<CounterIncrementPressed>((event, emit) => emit(state + 1));
+    on<CounterDecrementPressed>((event, emit) => emit(state - 1));
   }
 
   @override

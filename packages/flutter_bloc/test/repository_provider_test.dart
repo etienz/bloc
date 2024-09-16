@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:provider/provider.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({
-    Key? key,
     required this.repository,
     required this.child,
+    Key? key,
     this.useValueProvider = false,
   }) : super(key: key);
 
@@ -17,7 +16,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (useValueProvider == true) {
+    if (useValueProvider) {
       return MaterialApp(
         home: RepositoryProvider<Repository>.value(
           value: repository,
@@ -35,12 +34,12 @@ class MyApp extends StatelessWidget {
 }
 
 class MyStatefulApp extends StatefulWidget {
-  const MyStatefulApp({Key? key, required this.child}) : super(key: key);
+  const MyStatefulApp({required this.child, Key? key}) : super(key: key);
 
   final Widget child;
 
   @override
-  _MyStatefulAppState createState() => _MyStatefulAppState();
+  State<MyStatefulApp> createState() => _MyStatefulAppState();
 }
 
 class _MyStatefulAppState extends State<MyStatefulApp> {
@@ -66,7 +65,7 @@ class _MyStatefulAppState extends State<MyStatefulApp> {
                 onPressed: () {
                   setState(() => _repository = const Repository(0));
                 },
-              )
+              ),
             ],
           ),
           body: widget.child,
@@ -77,7 +76,7 @@ class _MyStatefulAppState extends State<MyStatefulApp> {
 }
 
 class MyAppNoProvider extends MaterialApp {
-  const MyAppNoProvider({Key? key, required Widget child})
+  const MyAppNoProvider({required Widget child, Key? key})
       : super(key: key, home: child);
 }
 
@@ -93,23 +92,6 @@ class CounterPage extends StatelessWidget {
 
     return Scaffold(
       body: Text('${repository.data}', key: const Key('value_data')),
-    );
-  }
-}
-
-class RoutePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: ElevatedButton(
-        key: const Key('route_button'),
-        child: const SizedBox(),
-        onPressed: () {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute<Widget>(builder: (context) => const SizedBox()),
-          );
-        },
-      ),
     );
   }
 }
@@ -158,27 +140,29 @@ void main() {
         const MyApp(repository: repository, child: child),
       );
 
-      final _counterFinder = find.byKey((const Key('value_data')));
-      expect(_counterFinder, findsOneWidget);
+      final counterFinder = find.byKey(const Key('value_data'));
+      expect(counterFinder, findsOneWidget);
 
-      final _counterText = _counterFinder.evaluate().first.widget as Text;
-      expect(_counterText.data, '0');
+      final counterText = counterFinder.evaluate().first.widget as Text;
+      expect(counterText.data, '0');
     });
 
     testWidgets('passes value to children via value', (tester) async {
       const repository = Repository(0);
       const child = CounterPage();
-      await tester.pumpWidget(const MyApp(
-        repository: repository,
-        child: child,
-        useValueProvider: true,
-      ));
+      await tester.pumpWidget(
+        const MyApp(
+          repository: repository,
+          useValueProvider: true,
+          child: child,
+        ),
+      );
 
-      final _counterFinder = find.byKey((const Key('value_data')));
-      expect(_counterFinder, findsOneWidget);
+      final counterFinder = find.byKey(const Key('value_data'));
+      expect(counterFinder, findsOneWidget);
 
-      final _counterText = _counterFinder.evaluate().first.widget as Text;
-      expect(_counterText.data, '0');
+      final counterText = counterFinder.evaluate().first.widget as Text;
+      expect(counterText.data, '0');
     });
 
     testWidgets(
@@ -187,7 +171,7 @@ void main() {
       const child = CounterPage();
       await tester.pumpWidget(const MyAppNoProvider(child: child));
       final dynamic exception = tester.takeException();
-      final expectedMessage = '''
+      const expectedMessage = '''
         RepositoryProvider.of() called with a context that does not contain a repository of type Repository.
         No ancestor could be found starting from the context that was passed to RepositoryProvider.of<Repository>().
 
@@ -195,8 +179,7 @@ void main() {
 
         The context used was: CounterPage(dirty)
 ''';
-      expect(exception is FlutterError, true);
-      expect(exception.message, expectedMessage);
+      expect((exception as FlutterError).message, expectedMessage);
     });
 
     testWidgets(
@@ -215,7 +198,7 @@ void main() {
           child: const SizedBox(),
         ),
       );
-
+      FlutterError.onError = onError;
       expect(
         flutterErrors,
         contains(
@@ -225,13 +208,11 @@ void main() {
             isA<StateError>().having(
               (e) => e.message,
               'message',
-              expected,
+              contains(expected),
             ),
           ),
         ),
       );
-
-      FlutterError.onError = onError;
     });
 
     testWidgets(
@@ -253,19 +234,21 @@ void main() {
           child: const SizedBox(),
         ),
       );
-
+      FlutterError.onError = onError;
       expect(
         flutterErrors,
         contains(
           isA<FlutterErrorDetails>().having(
             (d) => d.exception,
             'exception',
-            isA<StateError>().having((e) => e.message, 'message', expected),
+            isA<StateError>().having(
+              (e) => e.message,
+              'message',
+              contains(expected),
+            ),
           ),
         ),
       );
-
-      FlutterError.onError = onError;
     });
 
     testWidgets(
@@ -367,11 +350,11 @@ void main() {
           ),
         ),
       );
-      final _counterFinder = find.byKey((const Key('value_data')));
-      expect(_counterFinder, findsOneWidget);
+      final counterFinder = find.byKey(const Key('value_data'));
+      expect(counterFinder, findsOneWidget);
 
-      final _counterText = _counterFinder.evaluate().first.widget as Text;
-      expect(_counterText.data, '0');
+      final counterText = counterFinder.evaluate().first.widget as Text;
+      expect(counterText.data, '0');
     });
   });
 }

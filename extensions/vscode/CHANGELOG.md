@@ -1,3 +1,122 @@
+# 6.6.6
+
+- fix: wrap with preserves escaping
+- fix: wrap with preserves `const`
+- docs: update docs site references
+- chore: update copyright year
+
+# 6.6.5
+
+- fix: show context menu conditionally
+
+# 6.6.4
+
+- feat: add `useSealedClasses` to extension settings
+- docs: fix `README` badges
+- deps: upgrade various dependencies
+
+# 6.6.3
+
+- fix: wrap with interpolation
+- deps: upgrade various dependencies
+
+# 6.6.2
+
+- fix: rename element to bloc in `context.select` snippet
+
+# 6.6.1
+
+- fix: bloc and cubit template casing
+
+# 6.6.0
+
+- feat: add private mock snippets
+  - `_mockbloc`
+  - `_mockcubit`
+  - `_fake`
+  - `_mock`
+
+# 6.5.1
+
+- fix: reduce bundle size
+
+# 6.5.0
+
+- fix: update `BlocObserver` snippet to resolve Dart analyzer warning
+- feat: determine versions via `pubspec.lock`
+- feat: add `Mock` snippet
+- chore: upgrade dependencies
+
+# 6.4.0
+
+- feat: add `_onevent` snippet for creating an internal event handler
+- feat: improve `onevent` snippet to infer default event type
+- feat: add new extension settings:
+  - `bloc.newBlocTemplate.createDirectory` (defaults to true)
+  - `bloc.newCubitTemplate.createDirectory` (defaults to true)
+- refactor: remove deprecated snippets:
+  - `feventwhen`
+  - `feventmap`
+
+# 6.3.0
+
+- feat: add snippets for:
+  - `MockBloc`
+  - `MockCubit`
+  - `Fake`
+
+# 6.2.0
+
+- feat: query latest package versions from pub.dev
+
+# 6.1.0
+
+- feat: update to latest packages
+  - bloc -> ^7.2.1
+  - flutter_bloc -> ^7.3.3
+  - bloc_test -> ^8.5.0
+- fix:(vscode): escape $ in "wrap with" and "convert to"
+
+# 6.0.1
+
+- chore: remove unnecessary abstract keyword from freezed template
+
+# 6.0.0
+
+- **BREAKING**: update to bloc ^7.2.0
+  - update snippets to use `on<Event>` instead of deprecated `mapEventToState`
+- feat: add `onevent` snippet to register a new `EventHandler`
+- feat: update to latest packages
+  - bloc -> ^7.2.0
+  - flutter_bloc -> ^7.3.0
+  - angular_bloc -> ^7.1.0
+  - bloc_test -> ^8.2.0
+  - replay_bloc -> ^0.1.0
+  - bloc_concurrency -> ^0.1.0
+  - sealed_flutter_bloc -> ^7.1.0
+
+# 5.8.0
+
+- feat: add "Convert to..." Multi-Widget Actions
+  - `Convert to MultiBlocListener`
+  - `Convert to MultiBlocProvider`
+  - `Convert to MultiRepositoryProvider`
+
+# 5.7.0
+
+- feat: add snippets for `BlocSelector`
+- feat: add `Wrap with BlocSelector` action
+- feat: update to latest packages
+  - bloc_test -> ^8.1.0
+  - equatable -> ^2.0.3
+  - flutter_bloc -> ^7.1.0
+  - hydrated_bloc -> ^7.0.1
+  - sealed_flutter_bloc -> ^7.0.0
+
+# 5.6.2
+
+- fix: "Wrap with..." selection issues
+
 # 5.6.1
 
 - feat: add snippets for `bloc_test`

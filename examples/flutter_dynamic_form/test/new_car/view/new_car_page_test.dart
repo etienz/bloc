@@ -11,10 +11,6 @@ class MockNewCarRepository extends Mock implements NewCarRepository {}
 class MockNewCarBloc extends MockBloc<NewCarEvent, NewCarState>
     implements NewCarBloc {}
 
-class FakeNewCarEvent extends Fake implements NewCarEvent {}
-
-class FakeNewCarState extends Fake implements NewCarState {}
-
 extension on WidgetTester {
   Future<void> pumpNewCarPage(NewCarRepository newCarRepository) {
     return pumpWidget(
@@ -22,7 +18,7 @@ extension on WidgetTester {
         home: Scaffold(
           body: RepositoryProvider.value(
             value: newCarRepository,
-            child: NewCarPage(),
+            child: const NewCarPage(),
           ),
         ),
       ),
@@ -33,7 +29,10 @@ extension on WidgetTester {
     return pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: BlocProvider.value(value: newCarBloc, child: NewCarForm()),
+          body: BlocProvider.value(
+            value: newCarBloc,
+            child: const NewCarForm(),
+          ),
         ),
       ),
     );
@@ -56,8 +55,6 @@ void main() {
   final mockYear = mockYears[0];
 
   setUp(() {
-    registerFallbackValue<NewCarState>(FakeNewCarState());
-    registerFallbackValue<NewCarEvent>(FakeNewCarEvent());
     newCarRepository = MockNewCarRepository();
     newCarBloc = MockNewCarBloc();
   });

@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_weather/weather/weather.dart';
 
 class SettingsPage extends StatelessWidget {
-  static Route route(WeatherCubit weatherCubit) {
+  const SettingsPage._();
+
+  static Route<void> route() {
     return MaterialPageRoute<void>(
-      builder: (_) => BlocProvider.value(
-        value: weatherCubit,
-        child: SettingsPage(),
-      ),
+      builder: (_) => const SettingsPage._(),
     );
   }
 

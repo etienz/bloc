@@ -1,9 +1,11 @@
-import 'package:angular/angular.dart';
-
 import 'package:angular_bloc/angular_bloc.dart';
+import 'package:angular_counter/src/counter_page/counter_bloc.dart';
+import 'package:ngdart/angular.dart';
 
-import './counter_bloc.dart';
-
+/// {@template counter_page}
+/// Counter page component which renders a counter
+/// and allows users to increment/decrement the counter.
+/// {@endtemplate}
 @Component(
   selector: 'counter-page',
   templateUrl: 'counter_page_component.html',
@@ -12,20 +14,20 @@ import './counter_bloc.dart';
   pipes: [BlocPipe],
 )
 class CounterPageComponent implements OnDestroy {
-  final CounterBloc counterBloc;
+  /// {@macro counter_page}
+  const CounterPageComponent(this.counterBloc);
 
-  CounterPageComponent(this.counterBloc) {}
+  /// The associated [CounterBloc] which manages the count.
+  final CounterBloc counterBloc;
 
   @override
   void ngOnDestroy() {
     counterBloc.close();
   }
 
-  void increment() {
-    counterBloc.add(CounterEvent.increment);
-  }
+  /// Increment the count.
+  void increment() => counterBloc.add(CounterIncrementPressed());
 
-  void decrement() {
-    counterBloc.add(CounterEvent.decrement);
-  }
+  /// Decrement the count.
+  void decrement() => counterBloc.add(CounterDecrementPressed());
 }

@@ -4,7 +4,7 @@ part of 'replay_cubit.dart';
 /// Base event class for all [ReplayBloc] events.
 /// {@endtemplate}
 abstract class ReplayEvent {
-  /// {@template replay_event}
+  /// {@macro replay_event}
   const ReplayEvent();
 }
 
@@ -29,18 +29,12 @@ class _Undo extends ReplayEvent {
 /// A custom [ReplayBloc] can be created by extending [ReplayBloc].
 ///
 /// ```dart
-/// enum CounterEvent { increment }
+/// abstract class CounterEvent {}
+/// class CounterIncrementPressed extends CounterEvent {}
 ///
 /// class CounterBloc extends ReplayBloc<CounterEvent, int> {
-///   CounterBloc() : super(0);
-///
-///   @override
-///   Stream<int> mapEventToState(CounterEvent event) async* {
-///     switch (event) {
-///       case CounterEvent.increment:
-///         yield state + 1;
-///         break;
-///     }
+///   CounterBloc() : super(0) {
+///     on<CounterIncrementPressed>((event, emit) => emit(state + 1));
 ///   }
 /// }
 /// ```
@@ -50,7 +44,7 @@ class _Undo extends ReplayEvent {
 /// ```dart
 /// final bloc = CounterBloc();
 ///
-/// bloc.add(CounterEvent.increment);
+/// bloc.add(CounterIncrementPressed());
 ///
 /// bloc.undo();
 ///
@@ -79,55 +73,60 @@ abstract class ReplayBloc<Event extends ReplayEvent, State>
 mixin ReplayBlocMixin<Event extends ReplayEvent, State> on Bloc<Event, State> {
   late final _changeStack = _ChangeStack<State>(shouldReplay: shouldReplay);
 
+  BlocObserver get _observer => Bloc.observer;
+
   /// Sets the internal `undo`/`redo` size limit.
   /// By default there is no limit.
   set limit(int limit) => _changeStack.limit = limit;
 
   @override
-  Stream<State> mapEventToState(covariant Event event);
-
-  @override
   // ignore: must_call_super
   void onTransition(covariant Transition<ReplayEvent, State> transition) {
     // ignore: invalid_use_of_protected_member
-    Bloc.observer.onTransition(this, transition);
+    _observer.onTransition(this, transition);
   }
 
   @override
   // ignore: must_call_super
   void onEvent(covariant ReplayEvent event) {
     // ignore: invalid_use_of_protected_member
-    Bloc.observer.onEvent(this, event);
+    _observer.onEvent(this, event);
   }
 
   @override
   void emit(State state) {
-    _changeStack.add(_Change<State>(
-      this.state,
-      state,
-      () {
-        final event = _Redo();
-        onEvent(event);
-        onTransition(Transition(
-          currentState: this.state,
-          event: event,
-          nextState: state,
-        ));
-        // ignore: invalid_use_of_visible_for_testing_member
-        super.emit(state);
-      },
-      (val) {
-        final event = _Undo();
-        onEvent(event);
-        onTransition(Transition(
-          currentState: this.state,
-          event: event,
-          nextState: val,
-        ));
-        // ignore: invalid_use_of_visible_for_testing_member
-        super.emit(val);
-      },
-    ));
+    _changeStack.add(
+      _Change<State>(
+        this.state,
+        state,
+        () {
+          final event = _Redo();
+          onEvent(event);
+          onTransition(
+            Transition(
+              currentState: this.state,
+              event: event,
+              nextState: state,
+            ),
+          );
+          // ignore: invalid_use_of_visible_for_testing_member
+          super.emit(state);
+        },
+        (val) {
+          final event = _Undo();
+          onEvent(event);
+          onTransition(
+            Transition(
+              currentState: this.state,
+              event: event,
+              nextState: val,
+            ),
+          );
+          // ignore: invalid_use_of_visible_for_testing_member
+          super.emit(val);
+        },
+      ),
+    );
     // ignore: invalid_use_of_visible_for_testing_member
     super.emit(state);
   }

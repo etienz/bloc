@@ -20,7 +20,7 @@
 .classpath
 .project
 .settings/
-.vscode/
+.vscode/*
 
 # Flutter repo-specific
 /bin/cache/
@@ -49,7 +49,6 @@ version
 .pub-cache/
 .pub/
 build/
-flutter_*.png
 linked_*.ds
 unlinked.ds
 unlinked_spec.ds
@@ -100,7 +99,12 @@ coverage_badge.svg
 *.lcov
 nohup.out
 
+# Mason
+mason-lock.json
+.mason
+
 # Exceptions to above rules.
+!.vscode/launch.json
 !**/ios/**/default.mode1v3
 !**/ios/**/default.mode2v3
 !**/ios/**/default.pbxuser

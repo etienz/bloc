@@ -11,6 +11,15 @@
 
     <change-notes><![CDATA[
         <ul>
+          <li>v4.0.1 - Support for Intellij 2024</li>
+          <li>v4.0.0 - Support for Sealed Classes and Dependency Upgrades</li>
+          <li>v3.4.0 - Support for Freezed</li>
+          <li>v3.3.0 - Support for Mock snippet</li>
+          <li>v3.2.0 - Support for MockBloc, MockCubit, and Fake snippets</li>
+          <li>v3.1.0 - Support for Wrap with BlocSelector</li>
+          <li>v3.0.0 - Support for Bloc v7.2.0 (on<Event> API)</li>
+          <li>v2.4.0 - Add Convert to Multi Widget Actions</li>
+          <li>v2.3.0 - Add Equatable Props Generator and Live Templates Bloc/Cubit selection support</li>
           <li>v2.2.1 - Fix Wrapping Errors</li>
           <li>v2.2.0 - Wrap With Quick Action Support</li>
           <li>v2.1.0 - Live Template Support</li>
@@ -31,7 +40,7 @@
     </change-notes>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-    <idea-version since-build="145.0"/>
+    <idea-version since-build="145.0" until-build="241.*"/>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
        on how to target different products -->
@@ -57,6 +66,13 @@
                     group-id="NewGroup"
                     anchor="first"/>
         </action>
+        <action class="com.bloc.intellij_generator_plugin.action.GenerateEquatablePropsAction"
+                description="Generate Equatable Props Override"
+                id="GenerateEquatablePropsId"
+                text="Equatable Props">
+            <add-to-group group-id="GenerateGroup"
+                          anchor="last"/>
+        </action>
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -67,23 +83,52 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <intentionAction>
-            <className>com.bloc.intellij_generator_plugin.intention_action.BlocWrapWithBlocProviderIntentionAction</className>
+            <className>com.bloc.intellij_generator_plugin.intention_action.BlocWrapWithBlocProviderIntentionAction
+            </className>
             <category>Bloc</category>
         </intentionAction>
         <intentionAction>
-            <className>com.bloc.intellij_generator_plugin.intention_action.BlocWrapWithBlocBuilderIntentionAction</className>
+            <className>com.bloc.intellij_generator_plugin.intention_action.BlocWrapWithBlocBuilderIntentionAction
+            </className>
             <category>Bloc</category>
         </intentionAction>
         <intentionAction>
-            <className>com.bloc.intellij_generator_plugin.intention_action.BlocWrapWithBlocListenerIntentionAction</className>
+            <className>com.bloc.intellij_generator_plugin.intention_action.BlocWrapWithBlocSelectorIntentionAction
+            </className>
             <category>Bloc</category>
         </intentionAction>
         <intentionAction>
-            <className>com.bloc.intellij_generator_plugin.intention_action.BlocWrapWithBlocConsumerIntentionAction</className>
+            <className>com.bloc.intellij_generator_plugin.intention_action.BlocWrapWithBlocListenerIntentionAction
+            </className>
             <category>Bloc</category>
         </intentionAction>
         <intentionAction>
-            <className>com.bloc.intellij_generator_plugin.intention_action.BlocWrapWithRepositoryProviderIntentionAction</className>
+            <className>com.bloc.intellij_generator_plugin.intention_action.BlocWrapWithBlocConsumerIntentionAction
+            </className>
+            <category>Bloc</category>
+        </intentionAction>
+        <intentionAction>
+            <className>
+                com.bloc.intellij_generator_plugin.intention_action.BlocWrapWithRepositoryProviderIntentionAction
+            </className>
+            <category>Bloc</category>
+        </intentionAction>
+        <intentionAction>
+            <className>
+                com.bloc.intellij_generator_plugin.intention_action.BlocConvertToMultiBlocProviderIntentionAction
+            </className>
+            <category>Bloc</category>
+        </intentionAction>
+        <intentionAction>
+            <className>
+                com.bloc.intellij_generator_plugin.intention_action.BlocConvertToMultiBlocListenerIntentionAction
+            </className>
+            <category>Bloc</category>
+        </intentionAction>
+        <intentionAction>
+            <className>
+                com.bloc.intellij_generator_plugin.intention_action.BlocConvertToMultiRepositoryProviderIntentionAction
+            </className>
             <category>Bloc</category>
         </intentionAction>
     </extensions>

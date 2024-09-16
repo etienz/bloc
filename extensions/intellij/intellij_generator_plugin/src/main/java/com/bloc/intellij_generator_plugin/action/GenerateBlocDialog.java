@@ -4,16 +4,17 @@ import com.intellij.openapi.ui.DialogWrapper;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.util.Objects;
 
 public class GenerateBlocDialog extends DialogWrapper {
 
     private final Listener listener;
     private JTextField blocNameTextField;
-    private JCheckBox useEquatableCheckbox;
     private JPanel contentPanel;
+    private JComboBox<String> style;
 
     public GenerateBlocDialog(final Listener listener) {
-        super(null);
+        super(false);
         this.listener = listener;
         init();
     }
@@ -27,7 +28,16 @@ public class GenerateBlocDialog extends DialogWrapper {
     @Override
     protected void doOKAction() {
         super.doOKAction();
-        this.listener.onGenerateBlocClicked(blocNameTextField.getText(), useEquatableCheckbox.isSelected());
+        BlocTemplateType blocTemplateType;
+        final String selectedStyle = Objects.requireNonNull(style.getSelectedItem()).toString();
+        if (Objects.equals(selectedStyle, "Equatable")) {
+            blocTemplateType = BlocTemplateType.EQUATABLE;
+        } else if (Objects.equals(selectedStyle, "Freezed")) {
+            blocTemplateType = BlocTemplateType.FREEZED;
+        } else {
+            blocTemplateType = BlocTemplateType.BASIC;
+        }
+        this.listener.onGenerateBlocClicked(blocNameTextField.getText(), blocTemplateType);
     }
 
     @Nullable
@@ -37,6 +47,6 @@ public class GenerateBlocDialog extends DialogWrapper {
     }
 
     public interface Listener {
-        void onGenerateBlocClicked(String blocName, boolean shouldUseEquatable);
+        void onGenerateBlocClicked(String blocName, BlocTemplateType blocTemplateType);
     }
 }

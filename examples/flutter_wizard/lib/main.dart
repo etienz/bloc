@@ -1,20 +1,25 @@
-import 'package:flutter/foundation.dart';
+import 'package:flow_builder/flow_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_wizard/bloc/profile_wizard_bloc.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Home(),
-    );
-  }
+  Widget build(BuildContext context) => const MaterialApp(home: Home());
 }
 
-class Home extends StatelessWidget {
+class Home extends StatefulWidget {
+  const Home({super.key});
+
+  @override
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,6 +32,7 @@ class Home extends StatelessWidget {
                 final profile = await Navigator.of(context).push(
                   ProfileWizard.route(),
                 );
+                if (!context.mounted) return;
                 ScaffoldMessenger.of(context)
                   ..hideCurrentSnackBar()
                   ..showSnackBar(SnackBar(content: Text('$profile')));
@@ -41,62 +47,55 @@ class Home extends StatelessWidget {
 }
 
 class ProfileWizard extends StatelessWidget {
+  const ProfileWizard({super.key});
+
   static Route<Profile> route() {
-    return MaterialPageRoute(builder: (_) => ProfileWizard());
+    return MaterialPageRoute(builder: (_) => const ProfileWizard());
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => ProfileWizardBloc(),
-      child: ProfileWizardController(
+      child: ProfileWizardFlow(
         onComplete: (profile) => Navigator.of(context).pop(profile),
       ),
     );
   }
 }
 
-class ProfileWizardController extends StatefulWidget {
-  const ProfileWizardController({Key? key, required this.onComplete})
-      : super(key: key);
+class ProfileWizardFlow extends StatelessWidget {
+  const ProfileWizardFlow({required this.onComplete, super.key});
 
   final ValueSetter<Profile> onComplete;
 
   @override
-  _ProfileWizardControllerState createState() =>
-      _ProfileWizardControllerState();
-}
-
-class _ProfileWizardControllerState extends State<ProfileWizardController> {
-  final _navigatorKey = GlobalKey<NavigatorState>();
-
-  NavigatorState? get _navigator => _navigatorKey.currentState;
-
-  @override
   Widget build(BuildContext context) {
     return BlocListener<ProfileWizardBloc, ProfileWizardState>(
-      listener: (context, state) async {
-        if (state.profile.age != null) {
-          widget.onComplete(state.profile);
-        } else if (state.profile.name?.isNotEmpty == true) {
-          _navigator?.push(ProfileAgeForm.route());
-        }
-      },
-      child: Navigator(
-        key: _navigatorKey,
-        onGenerateRoute: (_) => ProfileNameForm.route(),
+      listenWhen: (_, state) => state.profile.isComplete,
+      listener: (context, state) => onComplete(state.profile),
+      child: FlowBuilder<ProfileWizardState>(
+        state: context.watch<ProfileWizardBloc>().state,
+        onGeneratePages: (state, pages) {
+          return [
+            ProfileNameForm.page(),
+            if (state.profile.name != null) ProfileAgeForm.page(),
+          ];
+        },
       ),
     );
   }
 }
 
 class ProfileNameForm extends StatefulWidget {
-  static Route route() {
-    return MaterialPageRoute(builder: (_) => ProfileNameForm());
+  const ProfileNameForm({super.key});
+
+  static Page<void> page() {
+    return const MaterialPage<void>(child: ProfileNameForm());
   }
 
   @override
-  _ProfileNameFormState createState() => _ProfileNameFormState();
+  State<ProfileNameForm> createState() => _ProfileNameFormState();
 }
 
 class _ProfileNameFormState extends State<ProfileNameForm> {
@@ -107,24 +106,27 @@ class _ProfileNameFormState extends State<ProfileNameForm> {
     return Scaffold(
       appBar: AppBar(title: const Text('Name')),
       body: Center(
-        child: Column(
-          children: <Widget>[
-            TextField(
-              onChanged: (value) => setState(() => _name = value),
-              decoration: InputDecoration(
-                labelText: 'Name',
-                hintText: 'John Doe',
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Column(
+            children: <Widget>[
+              TextField(
+                onChanged: (value) => setState(() => _name = value),
+                decoration: const InputDecoration(
+                  labelText: 'Name',
+                  hintText: 'John Doe',
+                ),
               ),
-            ),
-            ElevatedButton(
-              child: const Text('Continue'),
-              onPressed: _name.isNotEmpty
-                  ? () => context
-                      .read<ProfileWizardBloc>()
-                      .add(ProfileWizardNameSubmitted(_name))
-                  : null,
-            )
-          ],
+              ElevatedButton(
+                onPressed: _name.isNotEmpty
+                    ? () => context
+                        .read<ProfileWizardBloc>()
+                        .add(ProfileWizardNameSubmitted(_name))
+                    : null,
+                child: const Text('Continue'),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -132,12 +134,12 @@ class _ProfileNameFormState extends State<ProfileNameForm> {
 }
 
 class ProfileAgeForm extends StatefulWidget {
-  static Route route() {
-    return MaterialPageRoute(builder: (_) => ProfileAgeForm());
-  }
+  const ProfileAgeForm({super.key});
+
+  static Page<void> page() => const MaterialPage<void>(child: ProfileAgeForm());
 
   @override
-  _ProfileAgeFormState createState() => _ProfileAgeFormState();
+  State<ProfileAgeForm> createState() => _ProfileAgeFormState();
 }
 
 class _ProfileAgeFormState extends State<ProfileAgeForm> {
@@ -148,27 +150,34 @@ class _ProfileAgeFormState extends State<ProfileAgeForm> {
     return Scaffold(
       appBar: AppBar(title: const Text('Age')),
       body: Center(
-        child: Column(
-          children: <Widget>[
-            TextField(
-              onChanged: (value) => setState(() => _age = int.parse(value)),
-              decoration: InputDecoration(
-                labelText: 'Age',
-                hintText: '42',
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Column(
+            children: <Widget>[
+              TextField(
+                onChanged: (value) => setState(() => _age = int.parse(value)),
+                decoration: const InputDecoration(
+                  labelText: 'Age',
+                  hintText: '42',
+                ),
+                keyboardType: TextInputType.number,
               ),
-              keyboardType: TextInputType.number,
-            ),
-            ElevatedButton(
-              child: const Text('Continue'),
-              onPressed: _age != null
-                  ? () => context
-                      .read<ProfileWizardBloc>()
-                      .add(ProfileWizardAgeSubmitted(_age))
-                  : null,
-            )
-          ],
+              ElevatedButton(
+                onPressed: _age != null
+                    ? () => context
+                        .read<ProfileWizardBloc>()
+                        .add(ProfileWizardAgeSubmitted(_age))
+                    : null,
+                child: const Text('Continue'),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+}
+
+extension on Profile {
+  bool get isComplete => name != null && age != null;
 }

@@ -30,20 +30,29 @@ void main() {
       );
 
       blocTest<CounterCubit, int>(
-        'emits [1, 2] when increment is called multiple times'
+        'emits [1, 2] when increment is called multiple times '
         'with async act',
         build: () => CounterCubit(),
-        act: (cubit) => cubit..increment()..increment(),
+        act: (cubit) => cubit
+          ..increment()
+          ..increment(),
         expect: () => <int>[1, 2],
       );
 
       blocTest<CounterCubit, int>(
-        'emits [3] when increment is called and seed is 2'
+        'emits [3] when increment is called and seed is 2 '
         'with async act',
         build: () => CounterCubit(),
         seed: () => 2,
         act: (cubit) => cubit.increment(),
         expect: () => <int>[3],
+      );
+
+      blocTest<CounterCubit, int>(
+        'emits [1] when increment is called and expect is async',
+        build: () => CounterCubit(),
+        act: (cubit) => cubit.increment(),
+        expect: () async => <int>[1],
       );
     });
 
@@ -62,7 +71,7 @@ void main() {
       );
 
       blocTest<AsyncCounterCubit, int>(
-        'emits [1, 2] when increment is called multiple'
+        'emits [1, 2] when increment is called multiple '
         'times with async act',
         build: () => AsyncCounterCubit(),
         act: (cubit) async {
@@ -111,10 +120,12 @@ void main() {
       );
 
       blocTest<InstantEmitCubit, int>(
-        'emits [2, 3] when increment is called'
+        'emits [2, 3] when increment is called '
         'multiple times with async act',
         build: () => InstantEmitCubit(),
-        act: (cubit) => cubit..increment()..increment(),
+        act: (cubit) => cubit
+          ..increment()
+          ..increment(),
         expect: () => <int>[2, 3],
       );
     });
@@ -134,10 +145,12 @@ void main() {
       );
 
       blocTest<MultiCounterCubit, int>(
-        'emits [1, 2, 3, 4] when increment is called'
+        'emits [1, 2, 3, 4] when increment is called '
         'multiple times with async act',
         build: () => MultiCounterCubit(),
-        act: (cubit) => cubit..increment()..increment(),
+        act: (cubit) => cubit
+          ..increment()
+          ..increment(),
         expect: () => <int>[1, 2, 3, 4],
       );
     });
@@ -211,6 +224,7 @@ void main() {
       blocTest<ExceptionCubit, int>(
         'captures calls to addError',
         build: () => ExceptionCubit(),
+        // ignore: invalid_use_of_protected_member
         act: (cubit) => cubit.addError(exception),
         errors: () => <Matcher>[equals(exception)],
       );
@@ -236,6 +250,7 @@ void main() {
       blocTest<ErrorCubit, int>(
         'captures calls to addError',
         build: () => ErrorCubit(),
+        // ignore: invalid_use_of_protected_member
         act: (cubit) => cubit.addError(error),
         errors: () => <Matcher>[equals(error)],
       );

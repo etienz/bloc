@@ -1,5 +1,5 @@
 <p align="center">
-<img src="https://raw.githubusercontent.com/felangel/bloc/master/docs/assets/bloc_test_logo_full.png" height="100" alt="Bloc Test Package" />
+<img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/logos/bloc_test.png" height="100" alt="Bloc Test Package" />
 </p>
 
 <p align="center">
@@ -7,7 +7,6 @@
 <a href="https://github.com/felangel/bloc/actions"><img src="https://github.com/felangel/bloc/workflows/build/badge.svg" alt="build"></a>
 <a href="https://codecov.io/gh/felangel/bloc"><img src="https://codecov.io/gh/felangel/Bloc/branch/master/graph/badge.svg" alt="codecov"></a>
 <a href="https://github.com/felangel/bloc"><img src="https://img.shields.io/github/stars/felangel/bloc.svg?style=flat&logo=github&colorB=deeppink&label=stars" alt="Star on Github"></a>
-<a href="https://github.com/tenhobi/effective_dart"><img src="https://img.shields.io/badge/style-effective_dart-40c4ff.svg" alt="style: effective dart"></a>
 <a href="https://flutter.dev/docs/development/data-and-backend/state-mgmt/options#bloc--rx"><img src="https://img.shields.io/badge/flutter-website-deepskyblue.svg" alt="Flutter Website"></a>
 <a href="https://github.com/Solido/awesome-flutter#standard"><img src="https://img.shields.io/badge/awesome-flutter-blue.svg?longCache=true" alt="Awesome Flutter"></a>
 <a href="https://fluttersamples.com"><img src="https://img.shields.io/badge/flutter-samples-teal.svg?longCache=true" alt="Flutter Samples"></a>
@@ -28,15 +27,29 @@ A Dart package that makes testing blocs and cubits easy. Built to work with [blo
 
 Our top sponsors are shown below! [[Become a Sponsor](https://github.com/sponsors/felangel)]
 
-<table>    
+<table style="background-color: white; border: 1px solid black">
     <tbody>
         <tr>
-            <td align="center">
-                <a href="https://verygood.ventures"><img src="https://raw.githubusercontent.com/felangel/bloc/master/docs/assets/vgv_logo.png" width="120"/></a>
+            <td align="center" style="border: 1px solid black">
+                <a href="https://shorebird.dev"><img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/sponsors/shorebird.png" width="225"/></a>
             </td>
-            <td align="center">
-                <a href="https://getstream.io/chat/?utm_source=github&utm_medium=bloc-flutter&utm_campaign=oss_sponsorship" target="_blank"><img width="250px" src="https://stream-blog.s3.amazonaws.com/blog/wp-content/uploads/fc148f0fc75d02841d017bb36e14e388/Stream-logo-with-background-.png"/></a><br/><span><a href="https://getstream.io/chat/flutter/tutorial/?utm_source=github&utm_medium=bloc-flutter&utm_campaign=oss_sponsorship" target="_blank">Try the Flutter Chat Tutorial &nbsp💬</a></span>
-            </td>            
+            <td align="center" style="border: 1px solid black">
+                <a href="https://www.monterail.com/services/flutter-development/?utm_source=bloc&utm_medium=logo&utm_campaign=flutter"><img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/sponsors/monterail.png" width="225"/></a>
+            </td>
+            <td align="center" style="border: 1px solid black">
+                <a href="https://getstream.io/chat/flutter/tutorial/?utm_source=Github&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Github_Jan2022_FlutterChat&utm_term=bloc"><img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/sponsors/stream.png" width="225"/></a>
+            </td>
+        </tr>
+        <tr>
+            <td align="center" style="border: 1px solid black">
+                <a href="https://www.miquido.com/flutter-development-company/?utm_source=github&utm_medium=sponsorship&utm_campaign=bloc-silver-tier&utm_term=flutter-development-company&utm_content=miquido-logo"><img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/sponsors/miquido.png" width="225"/></a>
+            </td>
+            <td align="center" style="border: 1px solid black">
+                <a href="https://bit.ly/parabeac_flutterbloc"><img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/sponsors/parabeac.png" width="225"/></a>
+            </td>
+            <td align="center" style="border: 1px solid black">
+                <a href="https://www.netguru.com/services/flutter-app-development?utm_campaign=%5BS%5D%5BMob%5D%20Flutter&utm_source=github&utm_medium=sponsorship&utm_term=bloclibrary"><img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/sponsors/netguru.png" width="225"/></a>
+            </td>
         </tr>
     </tbody>
 </table>
@@ -71,7 +84,7 @@ whenListen(
 expect(counterBloc.state, equals(0));
 
 // Assert that the stubbed stream is emitted.
-await expectLater(counterBloc.stream, emitsInOrder(<int>[0, 1, 2, 3])))
+await expectLater(counterBloc.stream, emitsInOrder(<int>[0, 1, 2, 3]));
 
 // Assert that the current state is in sync with the stubbed stream.
 expect(counterBloc.state, equals(3));
@@ -82,7 +95,9 @@ expect(counterBloc.state, equals(3));
 **blocTest** creates a new `bloc`-specific test case with the given `description`.
 `blocTest` will handle asserting that the `bloc` emits the `expect`ed states (in order) after `act` is executed. `blocTest` also handles ensuring that no additional states are emitted by closing the `bloc` stream before evaluating the `expect`ation.
 
-`build` should be used for all `bloc` initialization and preparation and must return the `bloc` under test.
+`setUp` is optional and should be used to set up any dependencies prior to initializing the `bloc` under test. `setUp` should be used to set up state necessary for a particular test case. For common set up code, prefer to use `setUp` from `package:test/test.dart`.
+
+`build` should construct and return the `bloc` under test.
 
 `seed` is an optional `Function` that returns a state which will be used to seed the `bloc` before `act` is called.
 
@@ -98,6 +113,10 @@ expect(counterBloc.state, equals(3));
 
 `errors` is an optional `Function` that returns a `Matcher` which the `bloc` under test is expected to throw after `act` is executed.
 
+`tearDown` is optional and can be used to execute any code after the test has run. `tearDown` should be used to clean up after a particular test case. For common tear down code, prefer to use `tearDown` from `package:test/test.dart`.
+
+`tags` is optional and if it is passed, it declares user-defined tags that are applied to the test. These tags can be used to select or skip the test on the command line, or to do bulk test configuration.
+
 ```dart
 group('CounterBloc', () {
   blocTest(
@@ -107,9 +126,9 @@ group('CounterBloc', () {
   );
 
   blocTest(
-    'emits [1] when CounterEvent.increment is added',
+    'emits [1] when CounterIncrementPressed is added',
     build: () => CounterBloc(),
-    act: (bloc) => bloc.add(CounterEvent.increment),
+    act: (bloc) => bloc.add(CounterIncrementPressed()),
     expect: () => [1],
   );
 });
@@ -119,10 +138,10 @@ group('CounterBloc', () {
 
 ```dart
 blocTest(
-  'CounterCubit emits [10] when seeded with 9',
-  build: () => CounterCubit(),
+  'emits [10] when seeded with 9',
+  build: () => CounterBloc(),
   seed: () => 9,
-  act: (cubit) => cubit.increment(),
+  act: (bloc) => bloc.add(CounterIncrementPressed()),
   expect: () => [10],
 );
 ```
@@ -131,9 +150,9 @@ blocTest(
 
 ```dart
 blocTest(
-  'CounterBloc emits [2] when CounterEvent.increment is added twice',
+  'emits [2] when CounterIncrementPressed is added twice',
   build: () => CounterBloc(),
-  act: (bloc) => bloc..add(CounterEvent.increment)..add(CounterEvent.increment),
+  act: (bloc) => bloc..add(CounterIncrementPressed())..add(CounterIncrementPressed()),
   skip: 1,
   expect: () => [2],
 );
@@ -143,11 +162,11 @@ blocTest(
 
 ```dart
 blocTest(
-  'CounterBloc emits [1] when CounterEvent.increment is added',
-  build: () => CounterBloc(),
-  act: (bloc) => bloc.add(CounterEvent.increment),
+  'emits [MyState] when MyEvent is added',
+  build: () => MyBloc(),
+  act: (bloc) => bloc.add(MyEvent()),
   wait: const Duration(milliseconds: 300),
-  expect: () => [1],
+  expect: () => [isA<MyState>()],
 );
 ```
 
@@ -155,10 +174,10 @@ blocTest(
 
 ```dart
 blocTest(
-  'CounterBloc emits [1] when CounterEvent.increment is added',
-  build: () => CounterBloc(),
-  act: (bloc) => bloc.add(CounterEvent.increment),
-  expect: () => [1],
+  'emits [MyState] when MyEvent is added',
+  build: () => MyBloc(),
+  act: (bloc) => bloc.add(MyEvent()),
+  expect: () => [isA<MyState>()],
   verify: (_) {
     verify(() => repository.someMethod(any())).called(1);
   }
@@ -169,8 +188,8 @@ blocTest(
 
 ```dart
 blocTest(
-  'CounterBloc throws Exception when null is added',
-  build: () => CounterBloc(),
+  'throws Exception when null is added',
+  build: () => MyBloc(),
   act: (bloc) => bloc.add(null),
   errors: () => [isA<Exception>()]
 );
@@ -180,10 +199,10 @@ blocTest(
 
 ```dart
 blocTest(
-  'emits [StateB] when MyEvent is added',
+  'emits [MyState] when MyEvent is added',
   build: () => MyBloc(),
   act: (bloc) => bloc.add(MyEvent()),
-  expect: () => [isA<StateB>()],
+  expect: () => [isA<MyState>()],
 );
 ```
 

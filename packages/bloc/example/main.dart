@@ -1,48 +1,54 @@
+// ignore_for_file: avoid_print
+
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 
 class SimpleBlocObserver extends BlocObserver {
+  const SimpleBlocObserver();
+
   @override
-  void onCreate(BlocBase bloc) {
+  void onCreate(BlocBase<dynamic> bloc) {
     super.onCreate(bloc);
     print('onCreate -- bloc: ${bloc.runtimeType}');
   }
 
   @override
-  void onEvent(Bloc bloc, Object? event) {
+  void onEvent(Bloc<dynamic, dynamic> bloc, Object? event) {
     super.onEvent(bloc, event);
     print('onEvent -- bloc: ${bloc.runtimeType}, event: $event');
   }
 
   @override
-  void onChange(BlocBase bloc, Change change) {
+  void onChange(BlocBase<dynamic> bloc, Change<dynamic> change) {
     super.onChange(bloc, change);
     print('onChange -- bloc: ${bloc.runtimeType}, change: $change');
   }
 
   @override
-  void onTransition(Bloc bloc, Transition transition) {
+  void onTransition(
+    Bloc<dynamic, dynamic> bloc,
+    Transition<dynamic, dynamic> transition,
+  ) {
     super.onTransition(bloc, transition);
     print('onTransition -- bloc: ${bloc.runtimeType}, transition: $transition');
   }
 
   @override
-  void onError(BlocBase bloc, Object error, StackTrace stackTrace) {
+  void onError(BlocBase<dynamic> bloc, Object error, StackTrace stackTrace) {
     print('onError -- bloc: ${bloc.runtimeType}, error: $error');
     super.onError(bloc, error, stackTrace);
   }
 
   @override
-  void onClose(BlocBase bloc) {
+  void onClose(BlocBase<dynamic> bloc) {
     super.onClose(bloc);
     print('onClose -- bloc: ${bloc.runtimeType}');
   }
 }
 
 void main() {
-  Bloc.observer = SimpleBlocObserver();
-
+  Bloc.observer = const SimpleBlocObserver();
   cubitMain();
   blocMain();
 }
@@ -66,7 +72,7 @@ void cubitMain() {
   cubit.close();
 }
 
-void blocMain() async {
+Future<void> blocMain() async {
   print('----------BLOC----------');
 
   /// Create a `CounterBloc` instance.
@@ -76,7 +82,7 @@ void blocMain() async {
   print(bloc.state);
 
   /// Interact with the `bloc` to trigger `state` changes.
-  bloc.add(CounterEvent.increment);
+  bloc.add(CounterIncrementPressed());
 
   /// Wait for next iteration of the event-loop
   /// to ensure event has been processed.
@@ -101,23 +107,18 @@ class CounterCubit extends Cubit<int> {
 }
 
 /// The events which `CounterBloc` will react to.
-enum CounterEvent { increment }
+abstract class CounterEvent {}
+
+/// Notifies bloc to increment state.
+class CounterIncrementPressed extends CounterEvent {}
 
 /// A `CounterBloc` which handles converting `CounterEvent`s into `int`s.
 class CounterBloc extends Bloc<CounterEvent, int> {
   /// The initial state of the `CounterBloc` is 0.
-  CounterBloc() : super(0);
-
-  @override
-  Stream<int> mapEventToState(CounterEvent event) async* {
-    switch (event) {
-
-      /// When a `CounterEvent.increment` event is added,
-      /// the current `state` of the bloc is accessed via the `state` property
-      /// and a new state is emitted via `yield`.
-      case CounterEvent.increment:
-        yield state + 1;
-        break;
-    }
+  CounterBloc() : super(0) {
+    /// When a `CounterIncrementPressed` event is added,
+    /// the current `state` of the bloc is accessed via the `state` property
+    /// and a new state is emitted via `emit`.
+    on<CounterIncrementPressed>((event, emit) => emit(state + 1));
   }
 }

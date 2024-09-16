@@ -1,14 +1,12 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:bloc_test/bloc_test.dart';
-import 'package:flutter_login/login/login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_login/login/login.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:formz/formz.dart';
 import 'package:mocktail/mocktail.dart';
-
-class FakeLoginEvent extends Fake implements LoginEvent {}
-
-class FakeLoginState extends Fake implements LoginState {}
 
 class MockLoginBloc extends MockBloc<LoginEvent, LoginState>
     implements LoginBloc {}
@@ -16,11 +14,6 @@ class MockLoginBloc extends MockBloc<LoginEvent, LoginState>
 void main() {
   group('LoginForm', () {
     late LoginBloc loginBloc;
-
-    setUpAll(() {
-      registerFallbackValue<LoginEvent>(FakeLoginEvent());
-      registerFallbackValue<LoginState>(FakeLoginState());
-    });
 
     setUp(() {
       loginBloc = MockLoginBloc();
@@ -94,7 +87,26 @@ void main() {
         'loading indicator is shown when status is submission in progress',
         (tester) async {
       when(() => loginBloc.state).thenReturn(
-        const LoginState(status: FormzStatus.submissionInProgress),
+        const LoginState(status: FormzSubmissionStatus.inProgress),
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: BlocProvider.value(
+              value: loginBloc,
+              child: LoginForm(),
+            ),
+          ),
+        ),
+      );
+      expect(find.byType(ElevatedButton), findsNothing);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    });
+
+    testWidgets('loading indicator is shown when status is submission success',
+        (tester) async {
+      when(() => loginBloc.state).thenReturn(
+        const LoginState(status: FormzSubmissionStatus.success),
       );
       await tester.pumpWidget(
         MaterialApp(
@@ -112,9 +124,7 @@ void main() {
 
     testWidgets('continue button is enabled when status is validated',
         (tester) async {
-      when(() => loginBloc.state).thenReturn(
-        const LoginState(status: FormzStatus.valid),
-      );
+      when(() => loginBloc.state).thenReturn(const LoginState(isValid: true));
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -131,9 +141,7 @@ void main() {
 
     testWidgets('LoginSubmitted is added to LoginBloc when continue is tapped',
         (tester) async {
-      when(() => loginBloc.state).thenReturn(
-        const LoginState(status: FormzStatus.valid),
-      );
+      when(() => loginBloc.state).thenReturn(const LoginState(isValid: true));
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -153,12 +161,10 @@ void main() {
       whenListen(
         loginBloc,
         Stream.fromIterable([
-          const LoginState(status: FormzStatus.submissionInProgress),
-          const LoginState(status: FormzStatus.submissionFailure),
+          const LoginState(status: FormzSubmissionStatus.inProgress),
+          const LoginState(status: FormzSubmissionStatus.failure),
         ]),
-      );
-      when(() => loginBloc.state).thenReturn(
-        const LoginState(status: FormzStatus.submissionFailure),
+        initialState: const LoginState(status: FormzSubmissionStatus.failure),
       );
       await tester.pumpWidget(
         MaterialApp(

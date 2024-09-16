@@ -1,9 +1,8 @@
 // ignore_for_file: prefer_const_constructors
 import 'package:bloc_test/bloc_test.dart';
-import 'package:flutter_weather/weather/cubit/weather_cubit.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_weather/weather/weather.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:test/test.dart';
 import 'package:weather_repository/weather_repository.dart'
     as weather_repository;
 
@@ -19,34 +18,33 @@ class MockWeatherRepository extends Mock
 class MockWeather extends Mock implements weather_repository.Weather {}
 
 void main() {
+  initHydratedStorage();
+
   group('WeatherCubit', () {
     late weather_repository.Weather weather;
     late weather_repository.WeatherRepository weatherRepository;
     late WeatherCubit weatherCubit;
 
-    setUpAll(initHydratedBloc);
-
-    setUp(() {
+    setUp(() async {
       weather = MockWeather();
       weatherRepository = MockWeatherRepository();
       when(() => weather.condition).thenReturn(weatherCondition);
       when(() => weather.location).thenReturn(weatherLocation);
       when(() => weather.temperature).thenReturn(weatherTemperature);
-      when(() => weatherRepository.getWeather(any()))
-          .thenAnswer((_) async => weather);
+      when(
+        () => weatherRepository.getWeather(any()),
+      ).thenAnswer((_) async => weather);
       weatherCubit = WeatherCubit(weatherRepository);
     });
 
-    tearDown(() {
-      weatherCubit.close();
-    });
-
     test('initial state is correct', () {
+      final weatherCubit = WeatherCubit(weatherRepository);
       expect(weatherCubit.state, WeatherState());
     });
 
     group('toJson/fromJson', () {
       test('work properly', () {
+        final weatherCubit = WeatherCubit(weatherRepository);
         expect(
           weatherCubit.fromJson(weatherCubit.toJson(weatherCubit.state)),
           weatherCubit.state,
@@ -80,11 +78,12 @@ void main() {
 
       blocTest<WeatherCubit, WeatherState>(
         'emits [loading, failure] when getWeather throws',
-        build: () {
-          when(() => weatherRepository.getWeather(any()))
-              .thenThrow(Exception('oops'));
-          return weatherCubit;
+        setUp: () {
+          when(
+            () => weatherRepository.getWeather(any()),
+          ).thenThrow(Exception('oops'));
         },
+        build: () => weatherCubit,
         act: (cubit) => cubit.fetchWeather(weatherLocation),
         expect: () => <WeatherState>[
           WeatherState(status: WeatherStatus.loading),
@@ -187,11 +186,12 @@ void main() {
 
       blocTest<WeatherCubit, WeatherState>(
         'emits nothing when exception is thrown',
-        build: () {
-          when(() => weatherRepository.getWeather(any()))
-              .thenThrow(Exception('oops'));
-          return weatherCubit;
+        setUp: () {
+          when(
+            () => weatherRepository.getWeather(any()),
+          ).thenThrow(Exception('oops'));
         },
+        build: () => weatherCubit,
         seed: () => WeatherState(
           status: WeatherStatus.success,
           weather: Weather(
@@ -212,7 +212,7 @@ void main() {
           status: WeatherStatus.success,
           weather: Weather(
             location: weatherLocation,
-            temperature: Temperature(value: 0.0),
+            temperature: Temperature(value: 0),
             lastUpdated: DateTime(2020),
             condition: weatherCondition,
           ),
@@ -245,7 +245,7 @@ void main() {
           status: WeatherStatus.success,
           weather: Weather(
             location: weatherLocation,
-            temperature: Temperature(value: 0.0),
+            temperature: Temperature(value: 0),
             lastUpdated: DateTime(2020),
             condition: weatherCondition,
           ),
@@ -299,7 +299,6 @@ void main() {
         expect: () => <WeatherState>[
           WeatherState(
             status: WeatherStatus.success,
-            temperatureUnits: TemperatureUnits.celsius,
             weather: Weather(
               location: weatherLocation,
               temperature: Temperature(value: weatherTemperature.toCelsius()),
@@ -316,7 +315,6 @@ void main() {
         build: () => weatherCubit,
         seed: () => WeatherState(
           status: WeatherStatus.success,
-          temperatureUnits: TemperatureUnits.celsius,
           weather: Weather(
             location: weatherLocation,
             temperature: Temperature(value: weatherTemperature),
@@ -345,6 +343,6 @@ void main() {
 }
 
 extension on double {
-  double toFahrenheit() => ((this * 9 / 5) + 32);
-  double toCelsius() => ((this - 32) * 5 / 9);
+  double toFahrenheit() => (this * 9 / 5) + 32;
+  double toCelsius() => (this - 32) * 5 / 9;
 }

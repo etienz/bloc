@@ -1,11 +1,8 @@
 import 'package:bloc/bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
-
-/// Mixin which allows `MultiBlocProvider` to infer the types
-/// of multiple [BlocProvider]s.
-mixin BlocProviderSingleChildWidget on SingleChildWidget {}
 
 /// {@template bloc_provider}
 /// Takes a [Create] function that is responsible for
@@ -34,14 +31,14 @@ mixin BlocProviderSingleChildWidget on SingleChildWidget {}
 /// ```
 ///
 /// {@endtemplate}
-class BlocProvider<T extends BlocBase<Object?>>
-    extends SingleChildStatelessWidget with BlocProviderSingleChildWidget {
+class BlocProvider<T extends StateStreamableSource<Object?>>
+    extends SingleChildStatelessWidget {
   /// {@macro bloc_provider}
-  BlocProvider({
-    Key? key,
+  const BlocProvider({
     required Create<T> create,
+    Key? key,
     this.child,
-    this.lazy,
+    this.lazy = true,
   })  : _create = create,
         _value = null,
         super(key: key, child: child);
@@ -63,13 +60,13 @@ class BlocProvider<T extends BlocBase<Object?>>
   ///   child: ScreenA(),
   /// );
   /// ```
-  BlocProvider.value({
-    Key? key,
+  const BlocProvider.value({
     required T value,
+    Key? key,
     this.child,
   })  : _value = value,
         _create = null,
-        lazy = null,
+        lazy = true,
         super(key: key, child: child);
 
   /// Widget which will have access to the [Bloc] or [Cubit].
@@ -77,7 +74,7 @@ class BlocProvider<T extends BlocBase<Object?>>
 
   /// Whether the [Bloc] or [Cubit] should be created lazily.
   /// Defaults to `true`.
-  final bool? lazy;
+  final bool lazy;
 
   final Create<T>? _create;
 
@@ -92,7 +89,7 @@ class BlocProvider<T extends BlocBase<Object?>>
   /// ```dart
   /// BlocProvider.of<BlocA>(context);
   /// ```
-  static T of<T extends BlocBase<Object?>>(
+  static T of<T extends StateStreamableSource<Object?>>(
     BuildContext context, {
     bool listen = false,
   }) {
@@ -115,6 +112,10 @@ class BlocProvider<T extends BlocBase<Object?>>
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
+    assert(
+      child != null,
+      '$runtimeType used outside of MultiBlocProvider must specify a child',
+    );
     final value = _value;
     return value != null
         ? InheritedProvider<T>.value(
@@ -127,18 +128,24 @@ class BlocProvider<T extends BlocBase<Object?>>
             create: _create,
             dispose: (_, bloc) => bloc.close(),
             startListening: _startListening,
-            child: child,
             lazy: lazy,
+            child: child,
           );
   }
 
   static VoidCallback _startListening(
-    InheritedContext<BlocBase> e,
-    BlocBase value,
+    InheritedContext<StateStreamable<dynamic>?> e,
+    StateStreamable<dynamic> value,
   ) {
     final subscription = value.stream.listen(
       (dynamic _) => e.markNeedsNotifyDependents(),
     );
     return subscription.cancel;
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<bool>('lazy', lazy));
   }
 }

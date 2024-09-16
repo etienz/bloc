@@ -18,10 +18,6 @@ void main() {
   group('MockBloc', () {
     late CounterBloc counterBloc;
 
-    setUpAll(() {
-      registerFallbackValue<CounterEvent>(CounterEvent.increment);
-    });
-
     setUp(() {
       counterBloc = MockCounterBloc();
     });
@@ -32,13 +28,10 @@ void main() {
     });
 
     test('is compatible with listen', () {
-      // ignore: deprecated_member_use
-      expect(counterBloc.listen((_) {}), isA<StreamSubscription>());
-      expect(counterBloc.stream.listen((_) {}), isA<StreamSubscription>());
-    });
-
-    test('is compatible with emit', () {
-      counterBloc.emit(10);
+      expect(
+        counterBloc.stream.listen((_) {}),
+        isA<StreamSubscription<dynamic>>(),
+      );
     });
 
     test('is compatible with add', () {
@@ -46,10 +39,12 @@ void main() {
     });
 
     test('is compatible with addError without StackTrace', () {
+      // ignore: invalid_use_of_protected_member
       counterBloc.addError(Exception('oops'));
     });
 
     test('is compatible with addError with StackTrace', () {
+      // ignore: invalid_use_of_protected_member
       counterBloc.addError(Exception('oops'), StackTrace.empty);
     });
 
@@ -78,13 +73,6 @@ void main() {
       expect(counterBloc.close(), completes);
     });
 
-    test('is compatible with mapEventToState', () {
-      expect(
-        counterBloc.mapEventToState(CounterEvent.increment),
-        isA<Stream<int>>(),
-      );
-    });
-
     test('is automatically compatible with whenListen', () {
       whenListen(
         counterBloc,
@@ -96,19 +84,6 @@ void main() {
           <Matcher>[equals(0), equals(1), equals(2), equals(3), emitsDone],
         ),
       );
-    });
-
-    test('is automatically compatible with whenListen (legacy)', () {
-      final states = <int>[];
-      whenListen(
-        counterBloc,
-        Stream<int>.fromIterable([0, 1, 2, 3]),
-      );
-      // ignore: deprecated_member_use
-      counterBloc.listen(states.add, onDone: () {
-        expect(states, equals([0, 1, 2, 3]));
-        expect(counterBloc.state, equals(3));
-      });
     });
   });
 
@@ -135,19 +110,6 @@ void main() {
           <Matcher>[equals(0), equals(1), equals(2), equals(3), emitsDone],
         ),
       );
-    });
-
-    test('is automatically compatible with whenListen (legacy)', () {
-      final states = <int>[];
-      whenListen(
-        counterCubit,
-        Stream<int>.fromIterable([0, 1, 2, 3]),
-      );
-      // ignore: deprecated_member_use
-      counterCubit.listen(states.add, onDone: () {
-        expect(states, equals([0, 1, 2, 3]));
-        expect(counterCubit.state, equals(3));
-      });
     });
   });
 }

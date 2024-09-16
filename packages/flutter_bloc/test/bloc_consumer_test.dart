@@ -1,11 +1,10 @@
-import 'package:bloc/bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class CounterCubit extends Cubit<int> {
-  CounterCubit() : super(0);
+  CounterCubit({int seed = 0}) : super(seed);
 
   void increment() => emit(state + 1);
 }
@@ -320,7 +319,7 @@ void main() {
             listenStates.add(state);
           },
           buildWhen: (previous, current) {
-            if (current % 2 == 0) {
+            if (current.isEven) {
               buildWhenPreviousState.add(previous);
               buildWhenCurrentState.add(current);
               return true;
@@ -334,7 +333,10 @@ void main() {
         ),
       );
       await tester.pump();
-      counterCubit..increment()..increment()..increment();
+      counterCubit
+        ..increment()
+        ..increment()
+        ..increment();
       await tester.pumpAndSettle();
 
       expect(buildStates, [0, 2]);
@@ -350,7 +352,7 @@ void main() {
         'rebuilds and updates subscription '
         'when provided bloc is changed', (tester) async {
       final firstCounterCubit = CounterCubit();
-      final secondCounterCubit = CounterCubit()..emit(100);
+      final secondCounterCubit = CounterCubit(seed: 100);
 
       final states = <int>[];
       const expectedStates = [1, 101];
@@ -397,6 +399,34 @@ void main() {
 
       expect(find.text('Count 101'), findsOneWidget);
       expect(states, expectedStates);
+    });
+
+    testWidgets('overrides debugFillProperties', (tester) async {
+      final builder = DiagnosticPropertiesBuilder();
+
+      BlocConsumer(
+        bloc: CounterCubit(),
+        buildWhen: (previous, current) => previous != current,
+        builder: (context, state) => const SizedBox(),
+        listener: (context, state) {},
+        listenWhen: (previous, current) => previous != current,
+      ).debugFillProperties(builder);
+
+      final description = builder.properties
+          .where((node) => !node.isFiltered(DiagnosticLevel.info))
+          .map((node) => node.toString())
+          .toList();
+
+      expect(
+        description,
+        <String>[
+          "bloc: Instance of 'CounterCubit'",
+          'has builder',
+          'has listener',
+          'has buildWhen',
+          'has listenWhen',
+        ],
+      );
     });
   });
 }

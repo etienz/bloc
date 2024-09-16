@@ -1,9 +1,9 @@
 <p align="right">
-<a href="https://flutter.dev/docs/development/packages-and-plugins/favorites"><img src="https://raw.githubusercontent.com/felangel/bloc/master/docs/assets/flutter_favorite.png" width="100" alt="build"></a>
+<a href="https://flutter.dev/docs/development/packages-and-plugins/favorites"><img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/pub/flutter_favorite.png" width="100" alt="build"></a>
 </p>
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/felangel/bloc/master/docs/assets/flutter_bloc_logo_full.png" height="100" alt="Flutter Bloc Package" />
+<img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/logos/flutter_bloc.png" height="100" alt="Flutter Bloc Package" />
 </p>
 
 <p align="center">
@@ -11,7 +11,6 @@
 <a href="https://github.com/felangel/bloc/actions"><img src="https://github.com/felangel/bloc/workflows/build/badge.svg" alt="build"></a>
 <a href="https://codecov.io/gh/felangel/bloc"><img src="https://codecov.io/gh/felangel/Bloc/branch/master/graph/badge.svg" alt="codecov"></a>
 <a href="https://github.com/felangel/bloc"><img src="https://img.shields.io/github/stars/felangel/bloc.svg?style=flat&logo=github&colorB=deeppink&label=stars" alt="Star on Github"></a>
-<a href="https://github.com/tenhobi/effective_dart"><img src="https://img.shields.io/badge/style-effective_dart-40c4ff.svg" alt="style: effective dart"></a>
 <a href="https://flutter.dev/docs/development/data-and-backend/state-mgmt/options#bloc--rx"><img src="https://img.shields.io/badge/flutter-website-deepskyblue.svg" alt="Flutter Website"></a>
 <a href="https://github.com/Solido/awesome-flutter#standard"><img src="https://img.shields.io/badge/awesome-flutter-blue.svg?longCache=true" alt="Awesome Flutter"></a>
 <a href="https://fluttersamples.com"><img src="https://img.shields.io/badge/flutter-samples-teal.svg?longCache=true" alt="Flutter Samples"></a>
@@ -34,15 +33,29 @@ _\*Note: All widgets exported by the `flutter_bloc` package integrate with both 
 
 Our top sponsors are shown below! [[Become a Sponsor](https://github.com/sponsors/felangel)]
 
-<table>    
+<table style="background-color: white; border: 1px solid black">
     <tbody>
         <tr>
-            <td align="center">
-                <a href="https://verygood.ventures"><img src="https://raw.githubusercontent.com/felangel/bloc/master/docs/assets/vgv_logo.png" width="120"/></a>
+            <td align="center" style="border: 1px solid black">
+                <a href="https://shorebird.dev"><img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/sponsors/shorebird.png" width="225"/></a>
             </td>
-            <td align="center">
-                <a href="https://getstream.io/chat/?utm_source=github&utm_medium=bloc-flutter&utm_campaign=oss_sponsorship" target="_blank"><img width="250px" src="https://stream-blog.s3.amazonaws.com/blog/wp-content/uploads/fc148f0fc75d02841d017bb36e14e388/Stream-logo-with-background-.png"/></a><br/><span><a href="https://getstream.io/chat/flutter/tutorial/?utm_source=github&utm_medium=bloc-flutter&utm_campaign=oss_sponsorship" target="_blank">Try the Flutter Chat Tutorial &nbsp💬</a></span>
-            </td>            
+            <td align="center" style="border: 1px solid black">
+                <a href="https://www.monterail.com/services/flutter-development/?utm_source=bloc&utm_medium=logo&utm_campaign=flutter"><img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/sponsors/monterail.png" width="225"/></a>
+            </td>
+            <td align="center" style="border: 1px solid black">
+                <a href="https://getstream.io/chat/flutter/tutorial/?utm_source=Github&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Github_Jan2022_FlutterChat&utm_term=bloc"><img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/sponsors/stream.png" width="225"/></a>
+            </td>
+        </tr>
+        <tr>
+            <td align="center" style="border: 1px solid black">
+                <a href="https://www.miquido.com/flutter-development-company/?utm_source=github&utm_medium=sponsorship&utm_campaign=bloc-silver-tier&utm_term=flutter-development-company&utm_content=miquido-logo"><img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/sponsors/miquido.png" width="225"/></a>
+            </td>
+            <td align="center" style="border: 1px solid black">
+                <a href="https://bit.ly/parabeac_flutterbloc"><img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/sponsors/parabeac.png" width="225"/></a>
+            </td>
+            <td align="center" style="border: 1px solid black">
+                <a href="https://www.netguru.com/services/flutter-app-development?utm_campaign=%5BS%5D%5BMob%5D%20Flutter&utm_source=github&utm_medium=sponsorship&utm_term=bloclibrary"><img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/sponsors/netguru.png" width="225"/></a>
+            </td>
         </tr>
     </tbody>
 </table>
@@ -51,7 +64,7 @@ Our top sponsors are shown below! [[Become a Sponsor](https://github.com/sponsor
 
 ## Usage
 
-Lets take a look at how to use `BlocBuilder` to hook up a `CounterPage` widget to a `CounterCubit`.
+Lets take a look at how to use `BlocProvider` to provide a `CounterCubit` to a `CounterPage` and react to state changes with `BlocBuilder`.
 
 ### counter_cubit.dart
 
@@ -61,6 +74,24 @@ class CounterCubit extends Cubit<int> {
 
   void increment() => emit(state + 1);
   void decrement() => emit(state - 1);
+}
+```
+
+### main.dart
+
+```dart
+void main() => runApp(CounterApp());
+
+class CounterApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: BlocProvider(
+        create: (_) => CounterCubit(),
+        child: CounterPage(),
+      ),
+    );
+  }
 }
 ```
 
@@ -79,19 +110,14 @@ class CounterPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisAlignment: MainAxisAlignment.end,
         children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 5.0),
-            child: FloatingActionButton(
-              child: const Icon(Icons.add),
-              onPressed: () => context.read<CounterCubit>().increment(),
-            ),
+          FloatingActionButton(
+            child: const Icon(Icons.add),
+            onPressed: () => context.read<CounterCubit>().increment(),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 5.0),
-            child: FloatingActionButton(
-              child: const Icon(Icons.remove),
-              onPressed: () => context.read<CounterCubit>().decrement(),
-            ),
+          const SizedBox(height: 4),
+          FloatingActionButton(
+            child: const Icon(Icons.remove),
+            onPressed: () => context.read<CounterCubit>().decrement(),
           ),
         ],
       ),
@@ -100,7 +126,7 @@ class CounterPage extends StatelessWidget {
 }
 ```
 
-At this point we have successfully separated our presentational layer from our business logic layer. Notice that the `CounterPage` widget knows nothing about what happens when a user taps the buttons. The widget simply tells the `CounterCubit` that the user has pressed either the increment or decrement button.
+At this point we have successfully separated our presentational layer from our business logic layer. Notice that the `CounterPage` widget knows nothing about what happens when a user taps the buttons. The widget simply notifies the `CounterCubit` that the user has pressed either the increment or decrement button.
 
 ## Bloc Widgets
 
@@ -142,6 +168,23 @@ BlocBuilder<BlocA, BlocAState>(
   builder: (context, state) {
     // return widget here based on BlocA's state
   }
+)
+```
+
+### BlocSelector
+
+**BlocSelector** is a Flutter widget which is analogous to `BlocBuilder` but allows developers to filter updates by selecting a new value based on the current bloc state. Unnecessary builds are prevented if the selected value does not change. The selected value must be immutable in order for `BlocSelector` to accurately determine whether `builder` should be called again.
+
+If the `bloc` parameter is omitted, `BlocSelector` will automatically perform a lookup using `BlocProvider` and the current `BuildContext`.
+
+```dart
+BlocSelector<BlocA, BlocAState, SelectedState>(
+  selector: (state) {
+    // return selected state based on the provided state.
+  },
+  builder: (context, state) {
+    // return widget here based on the selected state.
+  },
 )
 ```
 
@@ -205,7 +248,7 @@ In addition, `context.select` can be used to retrieve part of a state and react 
 final isPositive = context.select((CounterBloc b) => b.state >= 0);
 ```
 
-The snippet above will only rebuild if the state of the `CounterBloc` changes from positive to negative or vice versa.
+The snippet above will only rebuild if the state of the `CounterBloc` changes from positive to negative or vice versa and is functionally identical to using a `BlocSelector`.
 
 ### MultiBlocProvider
 
@@ -430,35 +473,35 @@ MultiRepositoryProvider(
     <table>
         <tr>
             <td style="text-align: center">
-                <a href="https://bloclibrary.dev/#/fluttercountertutorial">
-                    <img src="https://bloclibrary.dev/assets/gifs/flutter_counter.gif" width="200"/>
+                <a href="https://bloclibrary.dev/tutorials/flutter-counter">
+                    <img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/examples/flutter_counter.gif" width="200"/>
                 </a>
             </td>            
             <td style="text-align: center">
-                <a href="https://bloclibrary.dev/#/flutterinfinitelisttutorial">
-                    <img src="https://bloclibrary.dev/assets/gifs/flutter_infinite_list.gif" width="200"/>
+                <a href="https://bloclibrary.dev/tutorials/flutter-infinite-list">
+                    <img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/examples/flutter_infinite_list.gif" width="200"/>
                 </a>
             </td>
             <td style="text-align: center">
-                <a href="https://bloclibrary.dev/#/flutterfirebaselogintutorial">
-                    <img src="https://bloclibrary.dev/assets/gifs/flutter_firebase_login.gif" width="200" />
+                <a href="https://bloclibrary.dev/tutorials/flutter-login">
+                    <img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/examples/flutter_firebase_login.gif" width="200" />
                 </a>
             </td>
         </tr>
         <tr>
             <td style="text-align: center">
-                <a href="https://bloclibrary.dev/#/flutterangulargithubsearch">
-                    <img src="https://bloclibrary.dev/assets/gifs/flutter_github_search.gif" width="200"/>
+                <a href="https://bloclibrary.dev/tutorials/github-search">
+                    <img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/examples/flutter_github_search.gif" width="200"/>
                 </a>
             </td>
             <td style="text-align: center">
-                <a href="https://bloclibrary.dev/#/flutterweathertutorial">
-                    <img src="https://bloclibrary.dev/assets/gifs/flutter_weather.gif" width="200"/>
+                <a href="https://bloclibrary.dev/tutorials/flutter-weather">
+                    <img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/examples/flutter_weather.gif" width="200"/>
                 </a>
             </td>
             <td style="text-align: center">
-                <a href="https://bloclibrary.dev/#/fluttertodostutorial">
-                    <img src="https://bloclibrary.dev/assets/gifs/flutter_todos.gif" width="200"/>
+                <a href="https://bloclibrary.dev/tutorials/flutter-todos">
+                    <img src="https://raw.githubusercontent.com/felangel/bloc/master/assets/examples/flutter_todos.gif" width="200"/>
                 </a>
             </td>
         </tr>
@@ -467,24 +510,23 @@ MultiRepositoryProvider(
 
 ## Examples
 
-- [Counter](https://bloclibrary.dev/#/fluttercountertutorial) - an example of how to create a `CounterBloc` to implement the classic Flutter Counter app.
+- [Counter](https://bloclibrary.dev/tutorials/flutter-counter) - an example of how to create a `CounterBloc` to implement the classic Flutter Counter app.
 - [Form Validation](https://github.com/felangel/bloc/tree/master/examples/flutter_form_validation) - an example of how to use the `bloc` and `flutter_bloc` packages to implement form validation.
 - [Bloc with Stream](https://github.com/felangel/bloc/tree/master/examples/flutter_bloc_with_stream) - an example of how to hook up a `bloc` to a `Stream` and update the UI in response to data from the `Stream`.
 - [Complex List](https://github.com/felangel/bloc/tree/master/examples/flutter_complex_list) - an example of how to manage a list of items and asynchronously delete items one at a time using `bloc` and `flutter_bloc`.
-- [Infinite List](https://bloclibrary.dev/#/flutterinfinitelisttutorial) - an example of how to use the `bloc` and `flutter_bloc` packages to implement an infinite scrolling list.
-- [Login Flow](https://bloclibrary.dev/#/flutterlogintutorial) - an example of how to use the `bloc` and `flutter_bloc` packages to implement a Login Flow.
-- [Firebase Login](https://bloclibrary.dev/#/flutterfirebaselogintutorial) - an example of how to use the `bloc` and `flutter_bloc` packages to implement login via Firebase.
-- [Github Search](https://bloclibrary.dev/#/flutterangulargithubsearch) - an example of how to create a Github Search Application using the `bloc` and `flutter_bloc` packages.
-- [Weather](https://bloclibrary.dev/#/flutterweathertutorial) - an example of how to create a Weather Application using the `bloc` and `flutter_bloc` packages. The app uses a `RefreshIndicator` to implement "pull-to-refresh" as well as dynamic theming.
-- [Todos](https://bloclibrary.dev/#/fluttertodostutorial) - an example of how to create a Todos Application using the `bloc` and `flutter_bloc` packages.
-- [Timer](https://bloclibrary.dev/#/fluttertimertutorial) - an example of how to create a Timer using the `bloc` and `flutter_bloc` packages.
-- [Firestore Todos](https://bloclibrary.dev/#/flutterfirestoretodostutorial) - an example of how to create a Todos Application using the `bloc` and `flutter_bloc` packages that integrates with cloud firestore.
+- [Infinite List](https://bloclibrary.dev/tutorials/flutter-infinite-list) - an example of how to use the `bloc` and `flutter_bloc` packages to implement an infinite scrolling list.
+- [Login Flow](https://bloclibrary.dev/tutorials/flutter-login) - an example of how to use the `bloc` and `flutter_bloc` packages to implement a Login Flow.
+- [Firebase Login](https://bloclibrary.dev/tutorials/flutter-firebase-login) - an example of how to use the `bloc` and `flutter_bloc` packages to implement login via Firebase.
+- [Github Search](https://bloclibrary.dev/tutorials/github-search) - an example of how to create a Github Search Application using the `bloc` and `flutter_bloc` packages.
+- [Weather](https://bloclibrary.dev/tutorials/flutter-weather) - an example of how to create a Weather Application using the `bloc` and `flutter_bloc` packages. The app uses a `RefreshIndicator` to implement "pull-to-refresh" as well as dynamic theming.
+- [Todos](https://bloclibrary.dev/tutorials/flutter-todos) - an example of how to create a Todos Application using the `bloc` and `flutter_bloc` packages.
+- [Timer](https://bloclibrary.dev/tutorials/flutter-timer) - an example of how to create a Timer using the `bloc` and `flutter_bloc` packages.
 - [Shopping Cart](https://github.com/felangel/bloc/tree/master/examples/flutter_shopping_cart) - an example of how to create a Shopping Cart Application using the `bloc` and `flutter_bloc` packages based on [flutter samples](https://github.com/flutter/samples/tree/master/provider_shopper).
 - [Dynamic Form](https://github.com/felangel/bloc/tree/master/examples/flutter_dynamic_form) - an example of how to use the `bloc` and `flutter_bloc` packages to implement a dynamic form which pulls data from a repository.
 - [Wizard](https://github.com/felangel/bloc/tree/master/examples/flutter_wizard) - an example of how to build a multi-step wizard using the `bloc` and `flutter_bloc` packages.
-- [GraphQL](https://github.com/felangel/bloc/tree/master/examples/flutter_graphql_jobs) - an example of how to use the `bloc` and `flutter_bloc` packages with `graphql` to retrieve data from [api.graphql.jobs](https://api.graphql.jobs).
 - [Fluttersaurus](https://github.com/felangel/fluttersaurus) - an example of how to use the `bloc` and `flutter_bloc` packages to create a thesuarus app -- made for Bytconf Flutter 2020.
 - [I/O Photo Booth](https://github.com/flutter/photobooth) - an example of how to use the `bloc` and `flutter_bloc` packages to create a virtual photo booth web app -- made for Google I/O 2021.
+- [I/O Pinball](https://github.com/flutter/pinball) - an example of how to use the `bloc` and `flutter_bloc` packages to create a pinball web app -- made for Google I/O 2022.
 
 ## Dart Versions
 

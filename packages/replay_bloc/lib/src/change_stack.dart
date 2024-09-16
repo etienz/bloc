@@ -3,7 +3,7 @@ part of 'replay_cubit.dart';
 typedef _Predicate<T> = bool Function(T);
 
 class _ChangeStack<T> {
-  _ChangeStack({this.limit, required _Predicate<T> shouldReplay})
+  _ChangeStack({required _Predicate<T> shouldReplay, this.limit})
       : _shouldReplay = shouldReplay;
 
   final Queue<_Change<T>> _history = ListQueue();
@@ -52,14 +52,14 @@ class _Change<T> {
   _Change(
     this._oldValue,
     this._newValue,
-    this._execute(),
-    this._undo(T oldValue),
+    this._execute,
+    this._undo,
   );
 
   final T _oldValue;
   final T _newValue;
-  final Function _execute;
-  final Function(T oldValue) _undo;
+  final void Function() _execute;
+  final void Function(T oldValue) _undo;
 
   void execute() => _execute();
   void undo() => _undo(_oldValue);

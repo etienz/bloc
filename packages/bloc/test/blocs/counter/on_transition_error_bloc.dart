@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:bloc/bloc.dart';
 
 import '../counter/counter_bloc.dart';
@@ -8,9 +6,11 @@ class OnTransitionErrorBloc extends Bloc<CounterEvent, int> {
   OnTransitionErrorBloc({
     required this.error,
     required this.onErrorCallback,
-  }) : super(0);
+  }) : super(0) {
+    on<CounterEvent>(_onCounterEvent);
+  }
 
-  final Function onErrorCallback;
+  final void Function(Object, StackTrace) onErrorCallback;
   final Error error;
 
   @override
@@ -25,15 +25,12 @@ class OnTransitionErrorBloc extends Bloc<CounterEvent, int> {
     throw error;
   }
 
-  @override
-  Stream<int> mapEventToState(CounterEvent event) async* {
+  void _onCounterEvent(CounterEvent event, Emitter<int> emit) {
     switch (event) {
       case CounterEvent.increment:
-        yield state + 1;
-        break;
+        return emit(state + 1);
       case CounterEvent.decrement:
-        yield state - 1;
-        break;
+        return emit(state - 1);
     }
   }
 }

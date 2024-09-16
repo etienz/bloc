@@ -1,7 +1,6 @@
-import 'package:bloc/bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:provider/provider.dart';
 
 /// {@template bloc_consumer}
 /// [BlocConsumer] exposes a [builder] and [listener] in order react to new
@@ -60,12 +59,12 @@ import 'package:provider/provider.dart';
 /// )
 /// ```
 /// {@endtemplate}
-class BlocConsumer<B extends BlocBase<S>, S> extends StatefulWidget {
+class BlocConsumer<B extends StateStreamable<S>, S> extends StatefulWidget {
   /// {@macro bloc_consumer}
   const BlocConsumer({
-    Key? key,
     required this.builder,
     required this.listener,
+    Key? key,
     this.bloc,
     this.buildWhen,
     this.listenWhen,
@@ -98,9 +97,30 @@ class BlocConsumer<B extends BlocBase<S>, S> extends StatefulWidget {
 
   @override
   State<BlocConsumer<B, S>> createState() => _BlocConsumerState<B, S>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<B?>('bloc', bloc))
+      ..add(ObjectFlagProperty<BlocWidgetBuilder<S>>.has('builder', builder))
+      ..add(ObjectFlagProperty<BlocWidgetListener<S>>.has('listener', listener))
+      ..add(
+        ObjectFlagProperty<BlocBuilderCondition<S>?>.has(
+          'buildWhen',
+          buildWhen,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<BlocListenerCondition<S>?>.has(
+          'listenWhen',
+          listenWhen,
+        ),
+      );
+  }
 }
 
-class _BlocConsumerState<B extends BlocBase<S>, S>
+class _BlocConsumerState<B extends StateStreamable<S>, S>
     extends State<BlocConsumer<B, S>> {
   late B _bloc;
 
@@ -127,7 +147,11 @@ class _BlocConsumerState<B extends BlocBase<S>, S>
 
   @override
   Widget build(BuildContext context) {
-    if (widget.bloc == null) context.select<B, int>(identityHashCode);
+    if (widget.bloc == null) {
+      // Trigger a rebuild if the bloc reference has changed.
+      // See https://github.com/felangel/bloc/issues/2127.
+      context.select<B, bool>((bloc) => identical(_bloc, bloc));
+    }
     return BlocBuilder<B, S>(
       bloc: _bloc,
       builder: widget.builder,

@@ -9,16 +9,17 @@ class MockAuthenticationRepository extends Mock
     implements AuthenticationRepository {}
 
 void main() {
-  late LoginBloc loginBloc;
   late AuthenticationRepository authenticationRepository;
 
   setUp(() {
     authenticationRepository = MockAuthenticationRepository();
-    loginBloc = LoginBloc(authenticationRepository: authenticationRepository);
   });
 
   group('LoginBloc', () {
     test('initial state is LoginState', () {
+      final loginBloc = LoginBloc(
+        authenticationRepository: authenticationRepository,
+      );
       expect(loginBloc.state, const LoginState());
     });
 
@@ -26,15 +27,17 @@ void main() {
       blocTest<LoginBloc, LoginState>(
         'emits [submissionInProgress, submissionSuccess] '
         'when login succeeds',
-        build: () {
+        setUp: () {
           when(
             () => authenticationRepository.logIn(
               username: 'username',
               password: 'password',
             ),
-          ).thenAnswer((_) => Future.value('user'));
-          return loginBloc;
+          ).thenAnswer((_) => Future<String>.value('user'));
         },
+        build: () => LoginBloc(
+          authenticationRepository: authenticationRepository,
+        ),
         act: (bloc) {
           bloc
             ..add(const LoginUsernameChanged('username'))
@@ -42,37 +45,40 @@ void main() {
             ..add(const LoginSubmitted());
         },
         expect: () => const <LoginState>[
+          LoginState(username: Username.dirty('username')),
           LoginState(
             username: Username.dirty('username'),
-            status: FormzStatus.invalid,
+            password: Password.dirty('password'),
+            isValid: true,
           ),
           LoginState(
             username: Username.dirty('username'),
             password: Password.dirty('password'),
-            status: FormzStatus.valid,
+            isValid: true,
+            status: FormzSubmissionStatus.inProgress,
           ),
           LoginState(
             username: Username.dirty('username'),
             password: Password.dirty('password'),
-            status: FormzStatus.submissionInProgress,
-          ),
-          LoginState(
-            username: Username.dirty('username'),
-            password: Password.dirty('password'),
-            status: FormzStatus.submissionSuccess,
+            isValid: true,
+            status: FormzSubmissionStatus.success,
           ),
         ],
       );
 
       blocTest<LoginBloc, LoginState>(
         'emits [LoginInProgress, LoginFailure] when logIn fails',
-        build: () {
-          when(() => authenticationRepository.logIn(
-                username: 'username',
-                password: 'password',
-              )).thenThrow(Exception('oops'));
-          return loginBloc;
+        setUp: () {
+          when(
+            () => authenticationRepository.logIn(
+              username: 'username',
+              password: 'password',
+            ),
+          ).thenThrow(Exception('oops'));
         },
+        build: () => LoginBloc(
+          authenticationRepository: authenticationRepository,
+        ),
         act: (bloc) {
           bloc
             ..add(const LoginUsernameChanged('username'))
@@ -82,22 +88,23 @@ void main() {
         expect: () => const <LoginState>[
           LoginState(
             username: Username.dirty('username'),
-            status: FormzStatus.invalid,
           ),
           LoginState(
             username: Username.dirty('username'),
             password: Password.dirty('password'),
-            status: FormzStatus.valid,
+            isValid: true,
           ),
           LoginState(
             username: Username.dirty('username'),
             password: Password.dirty('password'),
-            status: FormzStatus.submissionInProgress,
+            isValid: true,
+            status: FormzSubmissionStatus.inProgress,
           ),
           LoginState(
             username: Username.dirty('username'),
             password: Password.dirty('password'),
-            status: FormzStatus.submissionFailure,
+            isValid: true,
+            status: FormzSubmissionStatus.failure,
           ),
         ],
       );

@@ -1,9 +1,9 @@
 // ignore_for_file: prefer_const_constructors, must_be_immutable
 import 'package:authentication_repository/authentication_repository.dart';
 import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter_firebase_login/app/app.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:flutter_firebase_login/app/app.dart';
 
 class MockAuthenticationRepository extends Mock
     implements AuthenticationRepository {}
@@ -11,60 +11,68 @@ class MockAuthenticationRepository extends Mock
 class MockUser extends Mock implements User {}
 
 void main() {
-  group('AppBloc', () {
+  group(AppBloc, () {
     final user = MockUser();
     late AuthenticationRepository authenticationRepository;
 
     setUp(() {
       authenticationRepository = MockAuthenticationRepository();
       when(() => authenticationRepository.user).thenAnswer(
-        (_) => Stream.empty(),
+        (_) => const Stream.empty(),
       );
       when(
         () => authenticationRepository.currentUser,
-      ).thenReturn(User.empty);
+      ).thenReturn(user);
     });
 
-    test('initial state is unauthenticated when user is empty', () {
-      expect(
-        AppBloc(authenticationRepository: authenticationRepository).state,
-        AppState.unauthenticated(),
+    AppBloc buildBloc() {
+      return AppBloc(
+        authenticationRepository: authenticationRepository,
       );
+    }
+
+    test('initial state is $AppState', () {
+      expect(buildBloc().state, equals(AppState(user: user)));
     });
 
-    group('UserChanged', () {
+    group(AppUserSubscriptionRequested, () {
+      final error = Exception('oops');
+
       blocTest<AppBloc, AppState>(
-        'emits authenticated when user is not empty',
-        build: () {
-          when(() => user.isNotEmpty).thenReturn(true);
+        'emits $AppState when user stream emits a new value',
+        setUp: () {
           when(() => authenticationRepository.user).thenAnswer(
             (_) => Stream.value(user),
           );
-          return AppBloc(authenticationRepository: authenticationRepository);
         },
-        seed: () => AppState.unauthenticated(),
-        expect: () => [AppState.authenticated(user)],
+        build: buildBloc,
+        act: (bloc) => bloc.add(AppUserSubscriptionRequested()),
+        expect: () => [AppState(user: user)],
       );
 
       blocTest<AppBloc, AppState>(
-        'emits unauthenticated when user is empty',
-        build: () {
-          when(() => authenticationRepository.user).thenAnswer(
-            (_) => Stream.value(User.empty),
-          );
-          return AppBloc(authenticationRepository: authenticationRepository);
+        'adds error when user stream emits an error',
+        setUp: () {
+          when(
+            () => authenticationRepository.user,
+          ).thenAnswer((_) => Stream.error(error));
         },
-        expect: () => [AppState.unauthenticated()],
+        build: buildBloc,
+        act: (bloc) => bloc.add(AppUserSubscriptionRequested()),
+        errors: () => [error],
       );
     });
 
-    group('LogoutRequested', () {
+    group(AppLogoutPressed, () {
       blocTest<AppBloc, AppState>(
         'invokes logOut',
-        build: () {
-          return AppBloc(authenticationRepository: authenticationRepository);
+        setUp: () {
+          when(
+            () => authenticationRepository.logOut(),
+          ).thenAnswer((_) async {});
         },
-        act: (bloc) => bloc.add(AppLogoutRequested()),
+        build: buildBloc,
+        act: (bloc) => bloc.add(AppLogoutPressed()),
         verify: (_) {
           verify(() => authenticationRepository.logOut()).called(1);
         },

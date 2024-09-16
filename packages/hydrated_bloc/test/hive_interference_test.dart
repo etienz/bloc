@@ -1,11 +1,10 @@
 import 'dart:io';
 
-import 'package:test/test.dart';
 import 'package:hive/hive.dart';
-import 'package:path/path.dart' as p;
-
 // ignore: implementation_imports
 import 'package:hive/src/hive_impl.dart';
+import 'package:path/path.dart' as p;
+import 'package:test/test.dart';
 
 void main() {
   group('Hive interference', () {
@@ -20,8 +19,8 @@ void main() {
       var impl1 = HiveImpl()..init(cwd);
       var box1 = await impl1.openBox<dynamic>('impl1');
 
-      var impl2 = HiveImpl()..init(cwd);
-      var box2 = await impl2.openBox<dynamic>('impl2');
+      final impl2 = HiveImpl()..init(cwd);
+      final box2 = await impl2.openBox<dynamic>('impl2');
 
       await impl1.close();
 
@@ -33,6 +32,7 @@ void main() {
 
       Hive.init(cwd);
       await box1.deleteFromDisk();
+      await box2.close();
       await Hive.deleteBoxFromDisk('impl2');
     });
 
